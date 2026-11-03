@@ -58,7 +58,7 @@ ohne beide wird abgelehnt); **(2)** lokale Freigabeseite
 (`confirm.web`); **(3)** Webhook (`confirm.webhook`), der die Vorschau bekommt und über `POST /decision/<id>` mit einem
 **Token je Aufruf** antwortet (HMAC der Aufruf-ID – ein mitgelesenes Token öffnet nichts anderes; Webhook-URLs nur `https://`)
 und den `args_sha256` aus der Vorschau mitschickt – fehlt er oder passt er nicht → 403, eine Entscheidung gilt also nur für genau
-die gezeigten Argumente; die Freigabeseite bindet ihre Knöpfe genauso –
+die gezeigten Argumente; die Freigabeseite bindet ihre Knöpfe genauso. **Ein Webhook-Empfänger muss dem Menschen `tool_display`, `summary` und `arguments_display` zeigen – nie das rohe `tool` oder `arguments`:** die Anzeigefelder sind maskiert (unsichtbare, Bidi- und leerzeichenähnliche Zeichen erscheinen als `\uXXXX`), die Rohfelder nicht, ein Empfänger, der sie zeigt, lässt sich täuschen –
 hier hängt sich später AETHELGARDs „Braucht dich“ ein. Alle Kanäle teilen einen Timeout; **Timeout = Ablehnung**.
 
 Grenzen: **(a)** Elicitation beantwortet der *Client*. Ein autonomer Client, der Elicitation selbst beantwortet, gibt sich selbst
