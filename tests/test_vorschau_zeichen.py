@@ -83,19 +83,92 @@ class VorschauZeichen(unittest.TestCase):
         self.assertIn("x\\nTool: lesen", page)
 
     def test_blank_looking_characters_are_visible(self):
-        for raw in ("\u3000", "\u00a0", "\u2003", "\u3164", "\u115f", "\u2800", "\u180e"):
+        for raw in ("\u3000", "\u00a0", "\u2003", "\u3164", "\u115f", "\u2800", "\u180e", "\u303f", "\ufffc", "\U00016fe4"):
             out = visible("a" + raw + "b")
             self.assertNotIn(raw, out)
-            self.assertIn("\\u", out)
+            self.assertTrue("\\u" in out or "\\U" in out)
         self.assertEqual(visible("a b"), "a b")  # the normal space stays
         self.assertEqual(visible("é"), "é")  # accented text stays readable
 
+    def test_default_ignorable_and_invisible_marks_are_escaped(self):
+        """Alle Zeichen mit Default_Ignorable_Code_Point (inkl. U+034F, U+17B4/5, U+180B-D/F) und U+303F, U+FFFC, U+16FE4 werden sichtbar maskiert."""
+        from lookfirst.preview import _escape
+        # 1. Konkrete Befunde aus dem Review:
+        # U+034F (Combining Grapheme Joiner)
+        self.assertEqual(visible('{"datei": "re\u034fport.pdf"}'), '{"datei": "re\\u034fport.pdf"}')
+        # U+180B..U+180D, U+180F (Mongolian Free Variation Selectors 1-4)
+        for c in ("\u180b", "\u180c", "\u180d", "\u180f"):
+            self.assertIn(f"\\u{ord(c):04x}", visible(f"file{c}.txt"))
+            self.assertNotIn(c, visible(f"file{c}.txt"))
+        # U+17B4, U+17B5 (Khmer Inherent Vowels)
+        for c in ("\u17b4", "\u17b5"):
+            self.assertIn(f"\\u{ord(c):04x}", visible(f"cmd{c}"))
+            self.assertNotIn(c, visible(f"cmd{c}"))
+        # U+16FE4 (Khitan Small Script Filler)
+        self.assertIn("\\U00016fe4", visible("test\U00016fe4"))
+        self.assertNotIn("\U00016fe4", visible("test\U00016fe4"))
+        # U+303F, U+FFFC
+        self.assertEqual(visible("a\u303fb"), "a\\u303fb")
+        self.assertEqual(visible("a\ufffcb"), "a\\ufffcb")
+
+        # 2. Vollständige Gegenprobe aller 4174 Default_Ignorable_Code_Point-Codepunkte:
+        di_ranges = [
+            (0x00AD, 0x00AD), (0x034F, 0x034F), (0x061C, 0x061C), (0x115F, 0x1160),
+            (0x17B4, 0x17B5), (0x180B, 0x180D), (0x180E, 0x180E), (0x180F, 0x180F),
+            (0x200B, 0x200F), (0x202A, 0x202E), (0x2060, 0x2064), (0x2065, 0x2065),
+            (0x2066, 0x206F), (0x3164, 0x3164), (0xFE00, 0xFE0F), (0xFEFF, 0xFEFF),
+            (0xFFA0, 0xFFA0), (0xFFF0, 0xFFF8), (0x1BCA0, 0x1BCA3), (0x1D173, 0x1D17A),
+            (0xE0000, 0xE0000), (0xE0001, 0xE0001), (0xE0002, 0xE001F), (0xE0020, 0xE007F),
+            (0xE0080, 0xE00FF), (0xE0100, 0xE01EF), (0xE01F0, 0xE0FFF),
+        ]
+        unmasked = []
+        for start, end in di_ranges:
+            for cp in range(start, end + 1):
+                char = chr(cp)
+                if _escape(char) == char:
+                    unmasked.append(f"U+{cp:04X}")
+        self.assertEqual(unmasked, [], f"Folgende Default_Ignorable-Codepunkte wurden nicht maskiert: {unmasked}")
+
+    def test_accented_and_combining_marks_remain_readable(self):
+        """Sichtbare kombinierende Akzente (z. B. decomposed e + U+0301) bleiben unmaskiert lesbar."""
+        # e + COMBINING ACUTE ACCENT (U+0301)
+        self.assertEqual(visible("e\u0301"), "e\u0301")
+        # a + COMBINING DIAERESIS (U+0308)
+        self.assertEqual(visible("a\u0308"), "a\u0308")
+        # c + COMBINING CEDILLA (U+0327)
+        self.assertEqual(visible("c\u0327"), "c\u0327")
+
     def test_hard_cap_on_display_length_keeps_long_forms_out_of_elicitation(self):
-        from lookfirst.confirm import MAX_ELICIT_ARGS, too_long_for_form
+        from lookfirst.confirm import MAX_ELICIT_ARGS, MAX_ELICIT_DISPLAY, too_long_for_form
         tags = "".join(chr(0xE0000 + i) for i in range(60, 400))  # tag characters: tiny JSON, ten-fold escaped display
         p = build("c1", "notiz", {"text": tags}, None, None, "ask", "r")
         self.assertLess(args_len(p), MAX_ELICIT_ARGS)
         self.assertTrue(too_long_for_form(p))
+
+    def test_hard_cap_on_display_length_includes_tool_name_and_summary(self):
+        """Werkzeugname und Summary zählen zur 2400-Zeichen-Anzeigegrenze (too_long_for_form)."""
+        from lookfirst.confirm import MAX_ELICIT_ARGS, too_long_for_form
+        # 1. args_len und args_text sind kurz, aber Werkzeugname ist überlang (> 2400 Zeichen)
+        long_tool = "werkzeug_" + ("a" * 2400)
+        p_long_tool = build("c2", long_tool, {"arg": "value"}, None, None, "ask", "r")
+        self.assertLess(args_len(p_long_tool), MAX_ELICIT_ARGS)
+        self.assertTrue(too_long_for_form(p_long_tool))
+
+        # 2. args_len und args_text sind kurz, aber Summary ist überlang (> 2400 Zeichen)
+        p_long_summary = build("c3", "tool", {"arg": "value"}, None, None, "ask", "r")
+        p_long_summary["summary"] = "Zusammenfassung: " + ("x" * 2400)
+        self.assertLess(args_len(p_long_summary), MAX_ELICIT_ARGS)
+        self.assertTrue(too_long_for_form(p_long_summary))
+
+        # 3. Summe aus Tool, Summary und args_text überschreitet 2400:
+        p_sum = build("c4", "t" * 1000, {"arg": "v" * 600}, None, None, "ask", "r")
+        p_sum["summary"] = "s" * 1000
+        self.assertLess(args_len(p_sum), MAX_ELICIT_ARGS)
+        self.assertTrue(too_long_for_form(p_sum))
+
+        # 4. Normaler Aufruf liegt weit darunter:
+        p_normal = build("c5", "ueberweisung", {"an": "Demo GmbH", "betrag": 100}, None, None, "ask", "r")
+        self.assertFalse(too_long_for_form(p_normal))
 
     def test_webhook_body_carries_safe_display_fields(self):
         import json
