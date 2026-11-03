@@ -48,6 +48,7 @@ async def _run(workdir: Path, answer: str | None = None):
     shutil.copy(DEMO_DIR / "namen.txt", workdir / "namen.txt")
     conf = cfg.load(workdir / "lookfirst.yaml")
     conf.web = None
+    conf.upstreams["bank"].command = sys.executable  # same interpreter as lookfirst: no PATH lookup, works on Windows and in venvs
     audit.generate_key(conf.audit_key)
     log = audit.AuditLog(conf.audit_log, audit.load_private(conf.audit_key))
     confirmer = Confirmer(PendingRegistry(), conf.timeout_seconds, True, False, None)

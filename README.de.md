@@ -36,6 +36,8 @@ eine Überweisung stoppt für dein `y/N`, das Ergebnis wird rückgelesen, dann w
 
 ## Mit echtem Client
 
+Windows: reines Python, `py -m pip install <pfad-oder-git-url>` sollte funktionieren, ist von uns aber **noch nicht auf Windows getestet**.
+
 1. `lookfirst.yaml` schreiben (Vorlage: [lookfirst/demo_files/lookfirst.yaml](lookfirst/demo_files/lookfirst.yaml)): Upstreams, Regeln, Bestätigungskanäle, Pfade.
 2. `lookfirst keygen --config lookfirst.yaml` – einmalig den Ed25519-Schlüssel (0600) erzeugen.
 3. `lookfirst serve --config lookfirst.yaml` (stdio) oder `--transport http --port 8470` (Streamable HTTP unter `/mcp`).
