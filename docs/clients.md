@@ -34,8 +34,7 @@ source: modelcontextprotocol.io "Connect to local MCP servers", 2026-10-18). Add
 
 Use absolute paths; if `lookfirst` is not on the PATH the app sees, put the full path to the `lookfirst` executable
 (`pipx` installs to `~/.local/bin/lookfirst`, Windows `%USERPROFILE%\.local\bin\lookfirst.exe`) into `command`.
-Restart Claude Desktop completely. Claude Desktop supports MCP elicitation, so approvals appear **inside the chat**
-(`confirm.elicitation: true`); the web page is the fallback.
+Restart Claude Desktop completely. Whether Claude Desktop shows MCP elicitation inside the chat is **not verified by us (UNKNOWN)**; do not rely on it. Keep `confirm.web` configured so approvals land on the page (`confirm.elicitation: true` only adds the in-chat form if the client offers it).
 
 ## 2. Claude Code (stdio or HTTP)
 
@@ -83,6 +82,17 @@ Source: antigravity.google/docs/cli/gcli-migration (2026-10-18): MCP servers liv
 
 Start `lookfirst serve --config lookfirst.yaml --transport http --port 8470` before the agent. Whether Antigravity
 answers MCP elicitation is UNKNOWN (not stated in its docs) – keep `confirm.web` configured so approvals land on the page.
+
+## Observed on a test machine (2026-11-04, Linux, local wheel, demo bank)
+
+| Client (version) | In-chat elicitation | Web page (8477) | Webhook |
+|---|---|---|---|
+| Claude Code CLI 2.1.316 | not offered in our test (capability handshake reported `false`) | works | works |
+| Gemini CLI 0.66.0 | not offered in our test | works | works |
+| Antigravity 44.5.1 (HTTP) | not seen in our test | works | works |
+| Claude Desktop | not tested | expected to work (not tested) | not tested |
+
+Single observations by one tester, not a compatibility promise: client versions change, and Claude Code releases in particular may add elicitation. Treat the **web page as the channel that works everywhere** and re-check your client version before relying on the in-chat form.
 
 ## Who approved? (v1.1)
 
