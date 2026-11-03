@@ -22,9 +22,23 @@ def visible(text: str, keep_layout: bool = False, json_text: bool = False) -> st
     return "".join(c if keep_layout and c in "\n " or (json_text and c == "\\") else _escape(c) for c in text)
 
 
-# letters/symbols that render as empty space: Hangul fillers, empty Braille pattern, Mongolian vowel separator;
-# variation selectors (U+FE00-FE0F, U+E0100-E01EF) are escaped too: they are invisible marks
-_BLANK_FILLERS = frozenset("\u115f\u1160\u3164\uffa0\u2800\u180e")
+# Letters/symbols that render as empty space or invisible marks (Default_Ignorable_Code_Point in category Mn,
+# Hangul fillers, empty Braille pattern, Mongolian variation/vowel separators, Khmer inherent vowels,
+# combining grapheme joiner, Khitan small script filler, ideographic half fill space and object replacement):
+_INVISIBLE_MARKS = frozenset(
+    "\u034f"                    # COMBINING GRAPHEME JOINER (Mn, Default_Ignorable)
+    "\u115f\u1160"              # HANGUL CHOSEONG/JUNGSEONG FILLER (Lo, Default_Ignorable)
+    "\u17b4\u17b5"              # KHMER VOWEL INHERENT AQ/AA (Mn, Default_Ignorable)
+    "\u180b\u180c\u180d\u180f"  # MONGOLIAN FREE VARIATION SELECTORS 1-4 (Mn, Default_Ignorable)
+    "\u180e"                    # MONGOLIAN VOWEL SEPARATOR (Cf, Default_Ignorable)
+    "\u2800"                    # BRAILLE PATTERN BLANK (So)
+    "\u303f"                    # IDEOGRAPHIC HALF FILL SPACE (So)
+    "\u3164"                    # HANGUL FILLER (Lo, Default_Ignorable)
+    "\uffa0"                    # HALFWIDTH HANGUL FILLER (Lo, Default_Ignorable)
+    "\ufffc"                    # OBJECT REPLACEMENT CHARACTER (So)
+    "\U00016fe4"                # KHITAN SMALL SCRIPT FILLER (Mn)
+)
+_BLANK_FILLERS = _INVISIBLE_MARKS
 
 
 def _escape(c: str) -> str:
@@ -37,7 +51,11 @@ def _escape(c: str) -> str:
     if c == "\t":
         return "\\t"
     # Zs: every space except U+0020 (NBSP, ideographic space ...) and blank-looking fillers are invisible or look like spaces
-    if unicodedata.category(c) in ("Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp") or (c != " " and unicodedata.category(c) == "Zs") or c in _BLANK_FILLERS or "\ufe00" <= c <= "\ufe0f" or "\U000e0100" <= c <= "\U000e01ef":
+    if (unicodedata.category(c) in ("Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp")
+            or (c != " " and unicodedata.category(c) == "Zs")
+            or c in _INVISIBLE_MARKS
+            or "\ufe00" <= c <= "\ufe0f"
+            or "\U000e0100" <= c <= "\U000e01ef"):
         return f"\\u{ord(c):04x}" if ord(c) < 0x10000 else f"\\U{ord(c):08x}"
     return c
 
