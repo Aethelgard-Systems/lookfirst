@@ -81,15 +81,15 @@ fields (`$args.x`, `$result.y` placeholders). The result is `ok`, `unklar` (coul
 is returned to the client in `structuredContent.lookfirst` – a write is never reported as "done" without it.
 
 
-## Known limits (from the independent counter-check, 03.11.2026)
+## Known limits (independent counter-check, 2026-11-03)
 
-These are documented limits, not bugs we hide. Each has a test that pins the current behaviour or marks the wanted one.
+These are documented limits, not bugs we hide. The ids come from the counter-check and differ from the B-numbers in `docs/threat-model.md`. Each has a test that pins the current behaviour or marks the wanted one.
 
 | Id | Limit | What to do |
 |---|---|---|
-| B4.1 | If the audit log is truncated at the end **and** the `.head` sidecar file is deleted, the remaining hash chain still looks intact. `lookfirst verify-log` then ends with exit 0 and a warning (`head sidecar missing`). | Treat the warning as a failure in your own checks; keep the `.head` file with the log. |
-| B5.1 | The privacy filter (`schleuse`) is a deterministic pattern filter. An IBAN split by a line break, text with zero-width characters, or a secret that is only Base64-encoded in free text is **not** recognised. It reduces leakage, it does not anonymise. | Do not rely on it for secrets; keep secrets out of tool arguments. |
-| B7.1 | With `confirm.elicitation: true`, `lookfirst serve` does not warn at start about autonomous clients that might answer the elicitation themselves (self-approval). | For autonomous clients set `confirm.elicitation: false`, so only the web page or the webhook can approve. |
+| B4.1 | If the audit log is truncated at the end **and** the `.head` sidecar file is deleted, the remaining hash chain still looks intact. `lookfirst verify-log` then ends with exit 0 and a warning (`head sidecar missing`). | Treat the warning as a failure in your own checks. Keep a copy of the `.head` file (or just the last sequence number) **outside the write access of whoever can truncate the log** — a `.head` beside the log can be deleted together with it. |
+| B5.1 | The privacy filter (`schleuse`) is a deterministic pattern filter. An IBAN split by a line break, text with zero-width characters, or a secret that is only Base64-encoded in free text is **not** recognised. It reduces leakage, it does not anonymise. | Do not rely on it for secrets; keep secrets out of tool arguments. Also not recognised today: keys such as `db_password` or `access_token` (B5.2, pinned as an expected failure). |
+| B7.1 | With `confirm.elicitation: true`, `lookfirst serve` does not warn at start about autonomous clients that might answer the elicitation themselves (self-approval). | For autonomous clients set `confirm.elicitation: false`, so only the web page or the webhook can approve — **and** make sure the agent cannot reach that page (separate OS user, or `identity_header` behind an auth proxy); an agent that can reach loopback can read the page and post the decision itself. |
 
 ## Privacy lock („Schleuse“, v0.3 preview)
 
