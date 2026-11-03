@@ -63,7 +63,7 @@ call is denied); **(2)** the local
 web page (`confirm.web`); **(3)** a webhook (`confirm.webhook`) that receives the preview and answers on
 `POST /decision/<id>` with a **per-call token** (HMAC of the call id – a leaked token opens nothing else; webhook URLs must be
 `https://`) and the `args_sha256` from the preview – missing or different → 403, so a decision applies only to the exact
-arguments shown; the web page binds its buttons the same way) – this is where a system like AETHELGARD's "Braucht dich" plugs in. Every channel shares one timeout; **a timeout
+arguments shown; the web page binds its buttons the same way). **A webhook receiver must show `tool_display`, `summary` and `arguments_display` to the human – never the raw `tool` or `arguments`:** the display fields are escaped (invisible, bidi and look-alike-space characters appear as `\uXXXX`), the raw fields are not, and a receiver that shows them can be fooled – this is where a system like AETHELGARD's "Braucht dich" plugs in. Every channel shares one timeout; **a timeout
 is a denial**.
 
 Limits to know: **(a)** elicitation is answered by the *client*. An autonomous client that auto-answers elicitation would approve
