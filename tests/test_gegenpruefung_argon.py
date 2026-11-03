@@ -629,7 +629,7 @@ class TestBereich7AutonomerClientDokumentation(unittest.TestCase):
 
     def test_unmatched_rules_warns_on_stderr(self):
         """Regel-Tippfehler (unmatched_rules) erzeugen eine sichtbare Warnung auf sys.stderr beim Start (cli.py:43)."""
-        demo_dir = Path(__file__).resolve().parents[1] / "demo"
+        demo_dir = Path(__file__).resolve().parents[1] / "lookfirst" / "demo_files"
         pkg_root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as td:
             p = Path(td)
@@ -675,7 +675,7 @@ class TestBereich7AutonomerClientDokumentation(unittest.TestCase):
         key_path = p / "audit.key"
         audit.generate_key(key_path)
         cfg_file = p / "lookfirst.yaml"
-        demo_dir = Path(__file__).resolve().parents[1] / "demo"
+        demo_dir = Path(__file__).resolve().parents[1] / "lookfirst" / "demo_files"
         pkg_root = Path(__file__).resolve().parents[1]
         for f in ("bank_server.py", "namen.txt"):
             (p / f).write_text((demo_dir / f).read_text(encoding="utf-8"), encoding="utf-8")

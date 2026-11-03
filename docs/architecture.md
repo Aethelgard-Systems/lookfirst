@@ -44,7 +44,7 @@
 - **Stateless decisions, stateful log**: nothing is kept in memory beyond open confirmations; the log is the memory.
 - **Timeout = deny, unknown = confirm, read-back mandatory for a "done"**: the three defaults that make the gate safe when misconfigured.
 - **No business logic**: lookfirst knows nothing about banks, mails or tickets. Everything domain-specific lives in `lookfirst.yaml`.
-- **Standalone**: no imports from other projects; copy `products/lookfirst/` into its own repo without changes.
+- **Standalone**: no imports from other projects; this repository is the single source.
 
 ## Known limits (V1)
 - The web page and webhook endpoint share one process with the proxy; for HTTP transport they are a second port, not behind auth other than the CSRF/webhook token. Put it behind your own reverse proxy/auth.

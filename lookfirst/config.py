@@ -1,9 +1,9 @@
 """Configuration (YAML). One file describes upstreams, rules, confirmation channels, read-back checks and the audit log.
 
-Example (see demo/lookfirst.yaml):
+Example (see lookfirst/demo_files/lookfirst.yaml):
 
     upstreams:
-      bank: {command: "python", args: ["demo/bank_server.py"]}        # stdio
+      bank: {command: "python", args: ["lookfirst/demo_files/bank_server.py"]}        # stdio
       crm:  {url: "http://127.0.0.1:9000/mcp"}                         # Streamable HTTP
     rules:
       default: {read_only: allow, destructive: confirm, unknown: confirm}

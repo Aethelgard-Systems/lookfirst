@@ -5,7 +5,7 @@ transfer stops for a human, is executed only after approval, read back, and ever
 and `verify-log` catches it.
 
 **Setup (off camera):** `pip install -e .` in `products/lookfirst/`; terminal ≈ 100×32, large font. Everything runs
-offline against the fake bank in `demo/bank_server.py` (synthetic data). `--keep` leaves the working files behind so the real
+offline against the fake bank in `lookfirst/demo_files/bank_server.py` (synthetic data). `--keep` leaves the working files behind so the real
 CLI can be shown on the tampered log; `--yes` answers the approval question itself – for a live take leave it out and type `y`.
 
 ## Take 1 – approve (≈ 45 s)

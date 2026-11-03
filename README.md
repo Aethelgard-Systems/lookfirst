@@ -36,7 +36,7 @@ catches it. See [demo/VIDEO.md](demo/VIDEO.md) for the screen-recording script.
 
 ## Use it with a real client (5 minutes)
 
-1. Install once: `pipx install <path-or-git-url>/products/lookfirst` (or `pip install`). Gives you the `lookfirst` command.
+1. Install once: `pipx install <path-or-git-url>` (or `pip install`). Gives you the `lookfirst` command.
 2. Copy [examples/lookfirst.yaml](examples/lookfirst.yaml) next to where the log should live; set upstreams, rules, confirmation channels.
 3. `lookfirst keygen --config lookfirst.yaml` – creates the Ed25519 signing key (0600) once.
 4. Connect a client – ready-made snippets for **Claude Desktop**, **Claude Code** and **Antigravity** in [docs/clients.md](docs/clients.md)
@@ -193,7 +193,7 @@ package – an update or rollback does not touch them. Copy those four files som
 
 ```bash
 pip show lookfirst                                   # note the current version / commit
-pipx install --force <path-or-git-url>/products/lookfirst   # or: pip install -U <path>/products/lookfirst
+pipx install --force <path-or-git-url>   # or: pip install -U <path>
 lookfirst check --config lookfirst.yaml
 lookfirst verify-log --config lookfirst.yaml
 ```
@@ -201,7 +201,7 @@ lookfirst verify-log --config lookfirst.yaml
 Then restart the client (stdio: the client starts the gate) or the `serve --transport http` process.
 
 **Rollback.** Install the previous version the same way, pinned to the commit you noted:
-`pipx install --force "git+<git-url>@<previous-commit>#subdirectory=products/lookfirst"`, then `check` and `verify-log`
+`pipx install --force "git+<git-url>@<previous-commit>"`, then `check` and `verify-log`
 again. Never create a new key to "fix" a problem: old entries can only be verified with the old `.pub`.
 
 **What a tool call result means** (`structuredContent.lookfirst`):

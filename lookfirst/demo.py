@@ -19,7 +19,7 @@ from .confirm import Confirmer, PendingRegistry
 from .proxy import Gate
 from .upstream import Upstreams
 
-DEMO_DIR = Path(__file__).resolve().parent.parent / "demo"
+DEMO_DIR = Path(__file__).resolve().parent / "demo_files"
 
 
 def say(msg):
