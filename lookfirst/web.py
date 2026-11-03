@@ -24,7 +24,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 from starlette.routing import Route
 
-from .confirm import Confirmer, PendingRegistry, clean_actor
+from .confirm import Confirmer, PendingRegistry, clean_actor, tool_shown
 from .preview import visible
 
 PAGE = """<!doctype html><meta charset="utf-8"><title>lookfirst – Freigaben</title>
@@ -87,7 +87,7 @@ def create_app(registry: PendingRegistry, confirmer: Confirmer, redact, host: st
         items = [view(p) for p in registry.open_items()]
         verified = actor_of(request)
         who = WHO_HEADER.format(actor=html.escape(verified)) if hdr else WHO_FIELD
-        cards = "".join(CARD.format(summary=html.escape(p["summary"]), tool=html.escape(visible(p["tool"])), args=html.escape(visible(json.dumps(p["arguments"], ensure_ascii=False, indent=1), keep_layout=True)),
+        cards = "".join(CARD.format(summary=html.escape(p["summary"]), tool=html.escape(tool_shown(p)), args=html.escape(visible(json.dumps(p["arguments"], ensure_ascii=False, indent=1), keep_layout=True, json_text=True)),
                                     id=html.escape(p["id"]), sha=html.escape(str(p.get("args_sha256", ""))), csrf=csrf, who=who) for p in items)
         count = f"{len(items)} open" if items else "Nothing open."
         r = HTMLResponse(PAGE.format(count=count, cards=cards) + ("" if hdr else ACTOR_SCRIPT))

@@ -67,7 +67,16 @@ MAX_ELICIT_ARGS = 800  # characters of argument JSON an elicitation form shows; 
 
 
 def args_text(preview: dict) -> str:
-    return visible(json.dumps(preview.get("arguments") or {}, ensure_ascii=False))
+    return visible(json.dumps(preview.get("arguments") or {}, ensure_ascii=False), json_text=True)
+
+
+def args_len(preview: dict) -> int:
+    """Length limit is measured on the real argument JSON, not on the escaped display text (escaping must not reject legitimate emoji/ZWNJ text)."""
+    return len(json.dumps(preview.get("arguments") or {}, ensure_ascii=False))
+
+
+def tool_shown(preview: dict) -> str:
+    return preview.get("tool_display") or visible(str(preview.get("tool", "")))
 
 
 class PendingRegistry:
@@ -128,12 +137,12 @@ class Confirmer:
 
     async def ask(self, preview: dict, session=None) -> Decision:
         """``session`` is the MCP ServerSession of the calling client (for elicitation)."""
-        too_long = len(args_text(preview)) > MAX_ELICIT_ARGS
+        too_long = args_len(preview) > MAX_ELICIT_ARGS
         if self.use_elicitation and session is not None and _supports_elicitation(session):
             if not too_long:
                 return await self._elicit(preview, session)
             if not self.web_enabled and not self.webhook:
-                return Decision(False, "policy", f"Vorschau zu lang für Elicitation ({len(args_text(preview))} > {MAX_ELICIT_ARGS} Zeichen); "
+                return Decision(False, "policy", f"Vorschau zu lang für Elicitation ({args_len(preview)} > {MAX_ELICIT_ARGS} Zeichen); "
                                                  "Freigabe nur über confirm.web oder confirm.webhook – keiner konfiguriert")
         if not self.web_enabled and not self.webhook:
             return Decision(False, "policy", "no confirmation channel configured")
@@ -154,12 +163,12 @@ class Confirmer:
     async def _elicit(self, preview: dict, session) -> Decision:
         import mcp.types as t
         shown = args_text(preview)
-        if len(shown) > MAX_ELICIT_ARGS:  # never approve what was not shown in full (ask() already routes these elsewhere)
+        if args_len(preview) > MAX_ELICIT_ARGS:  # never approve what was not shown in full (ask() already routes these elsewhere)
             return Decision(False, "policy", "Vorschau zu lang für Elicitation")
         schema = {"type": "object", "properties": {"approve": {"type": "boolean", "title": "Approve this action?", "description": preview["summary"]}}, "required": ["approve"]}
         try:
             with anyio.fail_after(self.timeout):
-                res: t.ElicitResult = await session.elicit_form(f"lookfirst: {preview['summary']}\nTool: {visible(preview['tool'])}\nArguments: {shown}", schema)
+                res: t.ElicitResult = await session.elicit_form(f"lookfirst: {preview['summary']}\nTool: {tool_shown(preview)}\nArguments: {shown}", schema)
         except TimeoutError:
             return Decision(False, "timeout", f"no answer within {int(self.timeout)}s")
         except Exception as e:  # noqa: BLE001
@@ -171,7 +180,7 @@ class Confirmer:
         return Decision(True, "elicitation", "", actor)
 
     def _post_webhook(self, preview: dict):
-        body = json.dumps({"id": preview["id"], "summary": preview["summary"], "tool": preview["tool"], "arguments": preview["arguments"],
+        body = json.dumps({"id": preview["id"], "summary": preview["summary"], "tool": preview["tool"], "tool_display": tool_shown(preview), "arguments": preview["arguments"],
                            "args_sha256": preview["args_sha256"], "decision_endpoint": f"/decision/{preview['id']}", "token": self.call_token(preview["id"])}).encode()
         req = urllib.request.Request(self.webhook["url"], data=body, method="POST", headers={"Content-Type": "application/json"})
         with self.open(req, timeout=10) as r:

@@ -15,13 +15,16 @@ def args_hash(arguments: dict | None) -> str:
     return hashlib.sha256(canonical(arguments or {}).encode("utf-8")).hexdigest()
 
 
-def visible(text: str, keep_layout: bool = False) -> str:
+def visible(text: str, keep_layout: bool = False, json_text: bool = False) -> str:
     """Make control, line-break and invisible/bidi characters visible (``\\n``, ``\\u202e``) so an argument cannot
     forge extra lines or reverse text in what the human reads. The args hash is computed on the real arguments."""
-    return "".join(c if keep_layout and c in "\n " else _escape(c) for c in text)
+    # json_text: backslashes already are JSON escapes; plain text: a real backslash is doubled so it cannot imitate an escape
+    return "".join(c if keep_layout and c in "\n " or (json_text and c == "\\") else _escape(c) for c in text)
 
 
 def _escape(c: str) -> str:
+    if c == "\\":
+        return "\\\\"
     if c == "\n":
         return "\\n"
     if c == "\r":
