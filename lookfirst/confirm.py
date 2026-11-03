@@ -29,6 +29,8 @@ from typing import Any
 
 import anyio
 
+from .preview import visible
+
 
 @dataclass
 class Decision:
@@ -65,7 +67,7 @@ MAX_ELICIT_ARGS = 800  # characters of argument JSON an elicitation form shows; 
 
 
 def args_text(preview: dict) -> str:
-    return json.dumps(preview.get("arguments") or {}, ensure_ascii=False)
+    return visible(json.dumps(preview.get("arguments") or {}, ensure_ascii=False))
 
 
 class PendingRegistry:
@@ -157,7 +159,7 @@ class Confirmer:
         schema = {"type": "object", "properties": {"approve": {"type": "boolean", "title": "Approve this action?", "description": preview["summary"]}}, "required": ["approve"]}
         try:
             with anyio.fail_after(self.timeout):
-                res: t.ElicitResult = await session.elicit_form(f"lookfirst: {preview['summary']}\nTool: {preview['tool']}\nArguments: {shown}", schema)
+                res: t.ElicitResult = await session.elicit_form(f"lookfirst: {preview['summary']}\nTool: {visible(preview['tool'])}\nArguments: {shown}", schema)
         except TimeoutError:
             return Decision(False, "timeout", f"no answer within {int(self.timeout)}s")
         except Exception as e:  # noqa: BLE001
