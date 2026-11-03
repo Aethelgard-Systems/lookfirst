@@ -36,7 +36,7 @@ catches it. See [demo/VIDEO.md](demo/VIDEO.md) for the screen-recording script.
 
 ## Use it with a real client (5 minutes)
 
-1. Install once: `pipx install <path-or-git-url>` (or `pip install`). Gives you the `lookfirst` command.
+1. Install once: `pipx install <path-or-git-url>` (or `pip install`). Gives you the `lookfirst` command. Windows: pure Python, `py -m pip install <path-or-git-url>` should work, but we have **not tested it on Windows yet**.
 2. Copy [examples/lookfirst.yaml](examples/lookfirst.yaml) next to where the log should live; set upstreams, rules, confirmation channels.
 3. `lookfirst keygen --config lookfirst.yaml` – creates the Ed25519 signing key (0600) once.
 4. Connect a client – ready-made snippets for **Claude Desktop**, **Claude Code** and **Antigravity** in [docs/clients.md](docs/clients.md)
