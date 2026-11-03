@@ -22,3 +22,6 @@ lookfirst = "lookfirst.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["lookfirst*"]
+
+[tool.setuptools.package-data]
+lookfirst = ["demo_files/*"]

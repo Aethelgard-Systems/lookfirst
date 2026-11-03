@@ -13,7 +13,7 @@ import yaml
 from lookfirst import audit, check, cli
 from tests.helpers import DEFAULT_RULES, bank_server, serve_in_memory
 
-DEMO = Path(__file__).resolve().parent.parent / "demo"
+DEMO = Path(__file__).resolve().parent.parent / "lookfirst" / "demo_files"
 
 
 async def in_memory_probe(up, timeout):
@@ -137,3 +137,12 @@ class CheckTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DemoFilesPackaged(unittest.TestCase):
+    def test_demo_files_live_inside_the_package(self):
+        # `lookfirst demo` must work from an installed wheel: the demo files are package data, not repo-root files
+        import lookfirst.demo as d
+        for n in ("bank_server.py", "lookfirst.yaml", "namen.txt"):
+            self.assertTrue((d.DEMO_DIR / n).is_file(), n)
+        self.assertEqual(d.DEMO_DIR.parent.name, "lookfirst")

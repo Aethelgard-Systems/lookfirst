@@ -6,9 +6,9 @@ listed in `lookfirst.yaml`. Three ready-made configurations – copy, adjust the
 Common part, once (5 minutes):
 
 ```sh
-pipx install git+https://github.com/<org>/<repo>.git#subdirectory=products/lookfirst   # or: pip install <path-to>/products/lookfirst
+pipx install git+https://github.com/<org>/<repo>.git   # or: pip install <path-to>
 mkdir ~/lookfirst && cd ~/lookfirst
-cp <repo>/products/lookfirst/examples/lookfirst.yaml .      # edit upstreams + rules
+cp <repo>/examples/lookfirst.yaml .      # edit upstreams + rules
 lookfirst keygen --config lookfirst.yaml                    # Ed25519 signing key, 0600, once
 lookfirst serve --config lookfirst.yaml --transport http --port 8470   # only for HTTP clients; stdio clients start it themselves
 ```
