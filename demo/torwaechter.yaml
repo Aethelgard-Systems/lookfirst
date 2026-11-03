@@ -1,0 +1,25 @@
+# Torwächter demo – offline fake bank. Synthetic data only.
+name: torwaechter-demo
+upstreams:
+  bank: {command: "python3", args: ["bank_server.py"]}
+rules:
+  default: {read_only: allow, destructive: confirm, unknown: confirm}
+  tools:
+    ueberweisung:
+      action: confirm
+      summary: "Transfer {betrag} EUR to {an}"
+      readback:
+        tool: kontostand
+        args: {}
+        expect: {saldo: "$result.saldo"}    # the balance the bank reported after the transfer must be what we read back
+    kontostand: {action: allow}
+confirm:
+  timeout_seconds: 90
+  elicitation: true
+  web: {host: 127.0.0.1, port: 8477}
+audit:
+  log: "./torwaechter-audit.jsonl"
+  key: "./torwaechter-ed25519.key"
+schleuse:                               # Datenschutz-Schleuse (#604): IBANs, names, mails leave only as placeholders
+  detect: [IBAN, EMAIL]
+  names_file: "./namen.txt"

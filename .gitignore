@@ -1,0 +1,9 @@
+*.key
+*.key.pub
+*-audit.jsonl
+*-audit.jsonl.head
+__pycache__/
+*.egg-info/
+
+build/
+dist/
