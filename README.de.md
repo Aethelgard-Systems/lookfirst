@@ -36,7 +36,7 @@ eine Überweisung stoppt für dein `y/N`, das Ergebnis wird rückgelesen, dann w
 
 ## Mit echtem Client
 
-1. `lookfirst.yaml` schreiben (Vorlage: [demo/lookfirst.yaml](demo/lookfirst.yaml)): Upstreams, Regeln, Bestätigungskanäle, Pfade.
+1. `lookfirst.yaml` schreiben (Vorlage: [lookfirst/demo_files/lookfirst.yaml](lookfirst/demo_files/lookfirst.yaml)): Upstreams, Regeln, Bestätigungskanäle, Pfade.
 2. `lookfirst keygen --config lookfirst.yaml` – einmalig den Ed25519-Schlüssel (0600) erzeugen.
 3. `lookfirst serve --config lookfirst.yaml` (stdio) oder `--transport http --port 8470` (Streamable HTTP unter `/mcp`).
 4. Den Client auf lookfirst statt auf den Upstream zeigen lassen.
@@ -142,7 +142,7 @@ nicht im Paket – Update und Rückweg fassen sie nicht an. Diese vier Dateien v
 
 ```bash
 pip show lookfirst                                   # aktuelle Version / Commit notieren
-pipx install --force <pfad-oder-git-url>/products/lookfirst   # oder: pip install -U <pfad>/products/lookfirst
+pipx install --force <pfad-oder-git-url>   # oder: pip install -U <pfad>
 lookfirst check --config lookfirst.yaml
 lookfirst verify-log --config lookfirst.yaml
 ```
@@ -150,7 +150,7 @@ lookfirst verify-log --config lookfirst.yaml
 Danach den Client neu starten (stdio: der Client startet das Gate) bzw. den `serve --transport http`-Prozess.
 
 **Rückweg.** Vorige Version genauso installieren, auf den notierten Commit festgelegt:
-`pipx install --force "git+<git-url>@<voriger-commit>#subdirectory=products/lookfirst"`, danach wieder `check` und `verify-log`.
+`pipx install --force "git+<git-url>@<voriger-commit>"`, danach wieder `check` und `verify-log`.
 Nie einen neuen Schlüssel erzeugen, um ein Problem zu „lösen“: alte Einträge sind nur mit der alten `.pub` prüfbar.
 
 **Was ein Werkzeug-Ergebnis bedeutet** (`structuredContent.lookfirst`):
