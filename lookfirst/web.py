@@ -24,7 +24,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 from starlette.routing import Route
 
-from .confirm import Confirmer, PendingRegistry, clean_actor, tool_shown
+from .confirm import Confirmer, PendingRegistry, args_text, clean_actor, tool_shown
 from .preview import visible
 
 PAGE = """<!doctype html><meta charset="utf-8"><title>lookfirst – Freigaben</title>
@@ -81,7 +81,9 @@ def create_app(registry: PendingRegistry, confirmer: Confirmer, redact, host: st
         return clean_actor(form.get("actor", "")) if form is not None else ""
 
     def view(p) -> dict:
-        return {**redact(copy.deepcopy(p.preview)), "id": p.id, "args_sha256": p.args_sha256}
+        v = {**redact(copy.deepcopy(p.preview)), "id": p.id, "args_sha256": p.args_sha256}
+        v["tool_display"], v["arguments_display"] = tool_shown(v), args_text(v)  # what a human may safely read; raw fields stay for machines
+        return v
 
     async def index(request: Request):
         items = [view(p) for p in registry.open_items()]

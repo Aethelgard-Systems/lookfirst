@@ -22,6 +22,11 @@ def visible(text: str, keep_layout: bool = False, json_text: bool = False) -> st
     return "".join(c if keep_layout and c in "\n " or (json_text and c == "\\") else _escape(c) for c in text)
 
 
+# letters/symbols that render as empty space: Hangul fillers, empty Braille pattern, Mongolian vowel separator;
+# variation selectors (U+FE00-FE0F, U+E0100-E01EF) are escaped too: they are invisible marks
+_BLANK_FILLERS = frozenset("\u115f\u1160\u3164\uffa0\u2800\u180e")
+
+
 def _escape(c: str) -> str:
     if c == "\\":
         return "\\\\"
@@ -31,7 +36,8 @@ def _escape(c: str) -> str:
         return "\\r"
     if c == "\t":
         return "\\t"
-    if unicodedata.category(c) in ("Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"):
+    # Zs: every space except U+0020 (NBSP, ideographic space ...) and blank-looking fillers are invisible or look like spaces
+    if unicodedata.category(c) in ("Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp") or (c != " " and unicodedata.category(c) == "Zs") or c in _BLANK_FILLERS or "\ufe00" <= c <= "\ufe0f" or "\U000e0100" <= c <= "\U000e01ef":
         return f"\\u{ord(c):04x}" if ord(c) < 0x10000 else f"\\U{ord(c):08x}"
     return c
 

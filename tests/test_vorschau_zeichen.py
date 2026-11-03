@@ -82,6 +82,63 @@ class VorschauZeichen(unittest.TestCase):
         self.assertNotIn("<code>x\n", page)
         self.assertIn("x\\nTool: lesen", page)
 
+    def test_blank_looking_characters_are_visible(self):
+        for raw in ("\u3000", "\u00a0", "\u2003", "\u3164", "\u115f", "\u2800", "\u180e"):
+            out = visible("a" + raw + "b")
+            self.assertNotIn(raw, out)
+            self.assertIn("\\u", out)
+        self.assertEqual(visible("a b"), "a b")  # the normal space stays
+        self.assertEqual(visible("é"), "é")  # accented text stays readable
+
+    def test_hard_cap_on_display_length_keeps_long_forms_out_of_elicitation(self):
+        from lookfirst.confirm import MAX_ELICIT_ARGS, too_long_for_form
+        tags = "".join(chr(0xE0000 + i) for i in range(60, 400))  # tag characters: tiny JSON, ten-fold escaped display
+        p = build("c1", "notiz", {"text": tags}, None, None, "ask", "r")
+        self.assertLess(args_len(p), MAX_ELICIT_ARGS)
+        self.assertTrue(too_long_for_form(p))
+
+    def test_webhook_body_carries_safe_display_fields(self):
+        import json
+        import tempfile
+        sent = {}
+
+        class Resp:
+            def read(self):
+                return b""
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        def opener(req, timeout=0):
+            sent["body"] = json.loads(req.data.decode())
+            return Resp()
+
+        with tempfile.TemporaryDirectory() as d:
+            import pathlib
+            tok = pathlib.Path(d) / "t"
+            tok.write_text("secret", encoding="utf-8")
+            conf = Confirmer(PendingRegistry(), 5, False, False, {"url": "http://127.0.0.1:9/x", "token_file": str(tok)}, opener=opener)
+            p = build("c1", "x\nTool: lesen", {"an": BIDI}, None, None, "ask", "r")
+            conf._post_webhook(p)
+        self.assertNotIn("\u202e", sent["body"]["arguments_display"])
+        self.assertIn("\\u202e", sent["body"]["arguments_display"])
+        self.assertNotIn("\n", sent["body"]["tool_display"])
+        self.assertEqual(sent["body"]["arguments"], {"an": BIDI})  # machines get the real arguments
+
+    def test_open_api_view_has_safe_display_fields(self):
+        from starlette.testclient import TestClient
+        from lookfirst import redact
+        from lookfirst.web import create_app
+        reg = PendingRegistry()
+        conf = Confirmer(reg, 5, False, True, None)
+        reg.open(build("tw-2", "x\nTool: lesen", {"an": BIDI}, None, None, "ask", "r"))
+        data = TestClient(create_app(reg, conf, redact.identity), base_url="http://127.0.0.1:8477").get("/open").json()["open"][0]
+        self.assertNotIn("\u202e", data["arguments_display"])
+        self.assertNotIn("\n", data["tool_display"])
+
 
 if __name__ == "__main__":
     unittest.main()

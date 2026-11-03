@@ -26,6 +26,7 @@ claims only what is proven.
 | B5 | Any local process on loopback HTTP without token | Calls tools like the client | Mitigated: set `http.token_file`; the gate warns at start when it is missing. |
 | B6 | Arguments sent to external tools | Not masked (Schleuse route C missing) | **Open**, documented in README; not an anonymisation guarantee. |
 | B7 | Bearer token, previews and decisions over plain HTTP across a network | Anyone on the path reads the token and calls tools; previews leak; decisions can be altered | **Operator duty.** The bearer token is authentication, **not transport encryption**. Off the local trusted host, require TLS or another protected transport (reverse proxy with TLS, SSH tunnel, VPN). Webhook URLs are already `https://`-only. |
+| B8 | Arguments or tool name contain line breaks, bidi overrides, zero-width or blank-looking characters to forge what the human reads | Human approves something other than what runs (forged lines, reversed file names, "empty" values) | Mitigated: control, format, line-break, private-use, unassigned, non-ASCII space, Hangul/Braille fillers and variation selectors are shown as `\\uXXXX` in every channel (form, web card, `/open`, webhook `*_display` fields); the hash binds the real arguments; display text above 2400 characters never goes to a form. **Open:** combining marks (Mn) are shown as is, because escaping them would break decomposed accents; a client may still render other look-alike characters (homoglyphs) alike. |
 
 ## Release rule
 

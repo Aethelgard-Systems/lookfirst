@@ -64,10 +64,15 @@ class Pending:
 
 
 MAX_ELICIT_ARGS = 800  # characters of argument JSON an elicitation form shows; longer → web page / webhook only
+MAX_ELICIT_DISPLAY = 2400  # hard cap on the escaped display text (escaping can inflate one character to ten): clients may truncate long forms
 
 
 def args_text(preview: dict) -> str:
     return visible(json.dumps(preview.get("arguments") or {}, ensure_ascii=False), json_text=True)
+
+
+def too_long_for_form(preview: dict) -> bool:
+    return args_len(preview) > MAX_ELICIT_ARGS or len(args_text(preview)) > MAX_ELICIT_DISPLAY
 
 
 def args_len(preview: dict) -> int:
@@ -137,7 +142,7 @@ class Confirmer:
 
     async def ask(self, preview: dict, session=None) -> Decision:
         """``session`` is the MCP ServerSession of the calling client (for elicitation)."""
-        too_long = args_len(preview) > MAX_ELICIT_ARGS
+        too_long = too_long_for_form(preview)
         if self.use_elicitation and session is not None and _supports_elicitation(session):
             if not too_long:
                 return await self._elicit(preview, session)
@@ -163,7 +168,7 @@ class Confirmer:
     async def _elicit(self, preview: dict, session) -> Decision:
         import mcp.types as t
         shown = args_text(preview)
-        if args_len(preview) > MAX_ELICIT_ARGS:  # never approve what was not shown in full (ask() already routes these elsewhere)
+        if too_long_for_form(preview):  # never approve what was not shown in full (ask() already routes these elsewhere)
             return Decision(False, "policy", "Vorschau zu lang für Elicitation")
         schema = {"type": "object", "properties": {"approve": {"type": "boolean", "title": "Approve this action?", "description": preview["summary"]}}, "required": ["approve"]}
         try:
@@ -180,7 +185,7 @@ class Confirmer:
         return Decision(True, "elicitation", "", actor)
 
     def _post_webhook(self, preview: dict):
-        body = json.dumps({"id": preview["id"], "summary": preview["summary"], "tool": preview["tool"], "tool_display": tool_shown(preview), "arguments": preview["arguments"],
+        body = json.dumps({"id": preview["id"], "summary": preview["summary"], "tool": preview["tool"], "tool_display": tool_shown(preview), "arguments": preview["arguments"], "arguments_display": args_text(preview),
                            "args_sha256": preview["args_sha256"], "decision_endpoint": f"/decision/{preview['id']}", "token": self.call_token(preview["id"])}).encode()
         req = urllib.request.Request(self.webhook["url"], data=body, method="POST", headers={"Content-Type": "application/json"})
         with self.open(req, timeout=10) as r:
