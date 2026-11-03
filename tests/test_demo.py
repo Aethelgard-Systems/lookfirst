@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from torwaechter import demo
+from lookfirst import demo
 
 
 class TestDemo(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestDemo(unittest.TestCase):
                     d = Path(tmp)
                     rc = demo.run_demo(answer=ans, keep=str(d))
                     self.assertEqual(rc, 0)
-                    log_file = d / "torwaechter-audit.jsonl"
+                    log_file = d / "lookfirst-audit.jsonl"
                     self.assertTrue(log_file.exists())
                     lines = [json.loads(l) for l in log_file.read_text(encoding="utf-8").splitlines()]
                     

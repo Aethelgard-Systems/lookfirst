@@ -1,7 +1,7 @@
 """The gate itself: an MCP server that forwards ``tools/list`` and ``tools/call`` to the upstreams and, for every call
 that is not plain reading, runs preview → confirmation → execution → read-back → audit.
 
-Outcomes a client sees (``structuredContent.torwaechter``):
+Outcomes a client sees (``structuredContent.lookfirst``):
   allowed            – read-only or allowed by rule, forwarded unchanged (logged)
   denied             – by rule, by a human, by timeout, or because no confirmation channel exists (logged, never executed)
   executed           – approved and executed; ``readback`` is ``ok`` | ``unklar`` | ``fehlgeschlagen`` | ``none`` (no rule)
@@ -32,7 +32,7 @@ def new_call_id() -> str:
     return "tw-" + secrets.token_hex(8)
 
 
-_CURRENT: contextvars.ContextVar = contextvars.ContextVar("torwaechter_schleuse", default=None)
+_CURRENT: contextvars.ContextVar = contextvars.ContextVar("lookfirst_schleuse", default=None)
 
 
 class _MaskedAudit:
@@ -260,7 +260,7 @@ class Gate:
 
     @staticmethod
     def _result(gate: dict, text: str, error: bool = False) -> t.CallToolResult:
-        return t.CallToolResult(content=[t.TextContent(type="text", text=text)], structuredContent={"torwaechter": gate}, isError=error)
+        return t.CallToolResult(content=[t.TextContent(type="text", text=text)], structuredContent={"lookfirst": gate}, isError=error)
 
 
 def _structured(res) -> dict | None:
@@ -272,5 +272,5 @@ def _structured(res) -> dict | None:
 
 def _with_gate(res, gate: dict) -> t.CallToolResult:
     structured = _structured(res)
-    merged = {**(structured or {}), "torwaechter": gate}
+    merged = {**(structured or {}), "lookfirst": gate}
     return t.CallToolResult(content=list(res.content), structuredContent=merged, isError=bool(res.is_error))

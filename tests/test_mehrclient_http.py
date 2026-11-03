@@ -1,6 +1,6 @@
 """#668 P5: Sitzungstrennung der Schleuse über echten Streamable-HTTP-Transport (uvicorn auf 127.0.0.1, zwei Clients).
 
-Aufbau wie ``torwaechter serve --transport http``: ``httpauth.guard(server.streamable_http_app(host, json_response=True), token)``.
+Aufbau wie ``lookfirst serve --transport http``: ``httpauth.guard(server.streamable_http_app(host, json_response=True), token)``.
 Synthetischer Upstream liefert eine Beispiel-IBAN. Client A bekommt den Platzhalter; Client B (eigene MCP-Sitzung, gleicher
 Token) darf ihn weder auflösen noch A's Freigabe-Dialog sehen. Synthetische Daten only.
 """
@@ -22,10 +22,10 @@ from mcp.client.streamable_http import streamable_http_client
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tests.helpers import GateHarness, serve_in_memory  # noqa: E402
 from tests.test_schleuse import IBAN, finanz_server  # noqa: E402
-from tests.test_torwaechter import accept, gate_of, run  # noqa: E402
-from torwaechter import httpauth, redact  # noqa: E402
-from torwaechter.proxy import Gate  # noqa: E402
-from torwaechter.upstream import Upstreams  # noqa: E402
+from tests.test_lookfirst import accept, gate_of, run  # noqa: E402
+from lookfirst import httpauth, redact  # noqa: E402
+from lookfirst.proxy import Gate  # noqa: E402
+from lookfirst.upstream import Upstreams  # noqa: E402
 
 TOKEN = b"p5-" + b"t" * 40
 RAW = IBAN.replace(" ", "")

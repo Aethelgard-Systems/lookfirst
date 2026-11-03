@@ -1,8 +1,8 @@
-# Torwächter – architecture (V1)
+# lookfirst – architecture (V1)
 
 ```
                  ┌──────────────────────────────────────────────────────────────────┐
-  MCP client     │ Torwächter (torwaechter/)                                        │     upstream MCP servers
+  MCP client     │ lookfirst (lookfirst/)                                        │     upstream MCP servers
   (Claude, …)    │                                                                  │
    tools/list ───┼─▶ upstream.py  merge tool lists (prefix "<up>__" if >1) ─────────┼──▶ stdio subprocess
    tools/call ───┼─▶ proxy.Gate.on_call_tool                                        │    or Streamable HTTP
@@ -43,12 +43,12 @@
 - **Official SDK, lowlevel API**: no FastMCP magic, so the proxy forwards tool schemas verbatim and can speak to the client session (elicitation).
 - **Stateless decisions, stateful log**: nothing is kept in memory beyond open confirmations; the log is the memory.
 - **Timeout = deny, unknown = confirm, read-back mandatory for a "done"**: the three defaults that make the gate safe when misconfigured.
-- **No business logic**: Torwächter knows nothing about banks, mails or tickets. Everything domain-specific lives in `torwaechter.yaml`.
-- **Standalone**: no imports from other projects; copy `products/torwaechter/` into its own repo without changes.
+- **No business logic**: lookfirst knows nothing about banks, mails or tickets. Everything domain-specific lives in `lookfirst.yaml`.
+- **Standalone**: no imports from other projects; copy `products/lookfirst/` into its own repo without changes.
 
 ## Known limits (V1)
 - The web page and webhook endpoint share one process with the proxy; for HTTP transport they are a second port, not behind auth other than the CSRF/webhook token. Put it behind your own reverse proxy/auth.
-- The log cannot prove entries that were never written (e.g. a bypassed gate). Deploy so the client can only reach the upstreams through Torwächter.
+- The log cannot prove entries that were never written (e.g. a bypassed gate). Deploy so the client can only reach the upstreams through lookfirst.
 - Summaries are logged in clear text; use the redaction hook (stub in V1) if arguments carry private data.
 - `tools/list_changed` from upstreams is not propagated; restart to pick up new tools.
 - Resources/prompts are not proxied (tools only).

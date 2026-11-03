@@ -1,4 +1,4 @@
-"""``torwaechter check --config …`` (#668 P6): check a configuration without starting the gate.
+"""``lookfirst check --config …`` (#668 P6): check a configuration without starting the gate.
 
 One line per check: ``OK``, ``WARN`` or ``ERROR`` plus what to do. Exit 0 when there is no ERROR, 2 otherwise.
 Never prints tokens, keys or upstream environment values; upstream URLs are shown without credentials or query.
@@ -107,7 +107,7 @@ async def probe_upstream(up: cfg.Upstream, timeout: float) -> list[str]:
 def _check_audit(conf: cfg.Config, path: str, rep: Report):
     key = conf.audit_key
     if not key.exists():
-        rep.add(ERROR, "audit key", f"missing: {key} – run `torwaechter keygen --config {path}` once")
+        rep.add(ERROR, "audit key", f"missing: {key} – run `lookfirst keygen --config {path}` once")
     else:
         try:
             audit.load_private(key)

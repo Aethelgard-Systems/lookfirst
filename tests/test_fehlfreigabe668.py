@@ -1,7 +1,7 @@
 """#668: KI-Fehlfreigabe. Ein Client, der jede Rückfrage selbst bejaht, darf weder ein Verbot noch eine
 verlangte menschliche Freigabe aushebeln. Synthetische Daten, In-Memory-Client/-Server.
 
-Bestehende Belege, hier nicht dupliziert (test_torwaechter.py):
+Bestehende Belege, hier nicht dupliziert (test_lookfirst.py):
 - Freigabe gilt nur für genau diese Argumente: test_geaenderte_argumente_brauchen_neue_freigabe,
   test_webhook_entscheidung_braucht_passenden_args_hash, test_webseite_freigabe_braucht_passenden_args_hash
 - Positiver Kontrollfall mit Rücklesen: test_approve_executes_and_reads_back_ok
@@ -33,7 +33,7 @@ def always_yes(asked: list):
 
 
 def gate_of(res):
-    return res.structured_content["torwaechter"]
+    return res.structured_content["lookfirst"]
 
 
 def events(h):

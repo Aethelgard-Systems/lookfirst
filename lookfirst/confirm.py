@@ -157,7 +157,7 @@ class Confirmer:
         schema = {"type": "object", "properties": {"approve": {"type": "boolean", "title": "Approve this action?", "description": preview["summary"]}}, "required": ["approve"]}
         try:
             with anyio.fail_after(self.timeout):
-                res: t.ElicitResult = await session.elicit_form(f"Torwächter: {preview['summary']}\nTool: {preview['tool']}\nArguments: {shown}", schema)
+                res: t.ElicitResult = await session.elicit_form(f"lookfirst: {preview['summary']}\nTool: {preview['tool']}\nArguments: {shown}", schema)
         except TimeoutError:
             return Decision(False, "timeout", f"no answer within {int(self.timeout)}s")
         except Exception as e:  # noqa: BLE001

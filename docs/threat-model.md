@@ -1,6 +1,6 @@
 # Threat model and known bypasses (#668 P2)
 
-Torwächter protects **one route**: tool calls that a client sends *through* the gate. It is not a sandbox and does not
+lookfirst protects **one route**: tool calls that a client sends *through* the gate. It is not a sandbox and does not
 control anything that reaches the same system another way. This page lists what is and is not covered, so a release
 claims only what is proven.
 
@@ -8,10 +8,10 @@ claims only what is proven.
 
 | Boundary | How | Test |
 |---|---|---|
-| Write without human decision | rules + annotations → `confirm`; timeout/deny = no | `tests/test_torwaechter.py` |
-| Approval reused for other arguments | decision bound to `call_id` and `args_sha256`; web form and webhook must echo the hash of the preview, else 403 (#668 P3) | `tests/test_torwaechter.py` `FreigabeBindungTest` |
-| Approval for content the human did not see | elicitation only when the argument JSON fits in full (≤ 800 characters); longer → web page/webhook only, otherwise denied („Vorschau zu lang für Elicitation“) | `tests/test_torwaechter.py` `FreigabeBindungTest` |
-| Webhook decision for another call | per-call HMAC token | `tests/test_torwaechter.py` |
+| Write without human decision | rules + annotations → `confirm`; timeout/deny = no | `tests/test_lookfirst.py` |
+| Approval reused for other arguments | decision bound to `call_id` and `args_sha256`; web form and webhook must echo the hash of the preview, else 403 (#668 P3) | `tests/test_lookfirst.py` `FreigabeBindungTest` |
+| Approval for content the human did not see | elicitation only when the argument JSON fits in full (≤ 800 characters); longer → web page/webhook only, otherwise denied („Vorschau zu lang für Elicitation“) | `tests/test_lookfirst.py` `FreigabeBindungTest` |
+| Webhook decision for another call | per-call HMAC token | `tests/test_lookfirst.py` |
 | Unauthenticated HTTP entry | loopback-only without token; bearer token otherwise (401) | `tests/test_httpauth.py` |
 | Placeholder from another session | Schleuse binds placeholders to the session | `tests/test_schleuse.py` |
 

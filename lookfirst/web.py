@@ -26,10 +26,10 @@ from starlette.routing import Route
 
 from .confirm import Confirmer, PendingRegistry, clean_actor
 
-PAGE = """<!doctype html><meta charset="utf-8"><title>Torwächter – Freigaben</title>
+PAGE = """<!doctype html><meta charset="utf-8"><title>lookfirst – Freigaben</title>
 <style>body{{font-family:system-ui;max-width:44rem;margin:2rem auto;padding:0 1rem}} .c{{border:1px solid #ccc;border-radius:8px;padding:1rem;margin:1rem 0}}
 pre{{white-space:pre-wrap;background:#f6f6f6;padding:.5rem;border-radius:6px}} button{{padding:.6rem 1.2rem;font-size:1rem;margin-right:.5rem}}</style>
-<h1>Torwächter – waiting for you</h1><p>{count}</p>{cards}
+<h1>lookfirst – waiting for you</h1><p>{count}</p>{cards}
 <p><small>This page refreshes every 5 s. Nothing happens without your click.</small></p><script>setTimeout(()=>location.reload(),5000)</script>"""
 CARD = """<div class="c"><h2>{summary}</h2><p>Tool: <code>{tool}</code></p><pre>{args}</pre>
 {who}

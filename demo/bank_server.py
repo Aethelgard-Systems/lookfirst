@@ -1,4 +1,4 @@
-"""Fake bank – an offline MCP server for the Torwächter demo. Synthetic data only, nothing real.
+"""Fake bank – an offline MCP server for the lookfirst demo. Synthetic data only, nothing real.
 Tools: kontostand (read-only), ueberweisung (destructive)."""
 import anyio
 import mcp.types as t
