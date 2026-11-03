@@ -12,14 +12,14 @@ import yaml
 from mcp.server.lowlevel import Server
 from mcp.shared.exceptions import MCPError
 
-from torwaechter import audit, config
-from torwaechter.execution import ExecutionSafety
-from torwaechter.proxy import Gate
+from lookfirst import audit, config
+from lookfirst.execution import ExecutionSafety
+from lookfirst.proxy import Gate
 from tests.helpers import GateHarness
 
 
 def gate_of(result):
-    return result.structured_content["torwaechter"]
+    return result.structured_content["lookfirst"]
 
 
 def decisions(*answers):
@@ -176,7 +176,7 @@ class ExecutionTest(unittest.TestCase):
             ExecutionSafety(audit.AuditLog(self.h.conf.audit_log, self.h.log.key))
 
     def test_unblock_is_recovered_and_does_not_reuse_old_policy_approval(self):
-        from torwaechter.confirm import Decision
+        from lookfirst.confirm import Decision
         safety = ExecutionSafety(self.h.log)
         safety.start("tw-old", "write", "0" * 64)
         safety.unblock("tw-unlock", "write", Decision(True, "web", actor="synthetic-human"))
@@ -233,8 +233,8 @@ class ExecutionTest(unittest.TestCase):
 
     def test_new_process_recovers_unresolved_start(self):
         ExecutionSafety(self.h.log).start("tw-interrupted", "write", "0" * 64)
-        code = ("import json,sys; from pathlib import Path; from torwaechter.audit import AuditLog,load_private; "
-                "from torwaechter.execution import ExecutionSafety; "
+        code = ("import json,sys; from pathlib import Path; from lookfirst.audit import AuditLog,load_private; "
+                "from lookfirst.execution import ExecutionSafety; "
                 "print(json.dumps(ExecutionSafety(AuditLog(Path(sys.argv[1]),load_private(Path(sys.argv[2])))).blocked))")
         result = subprocess.run([sys.executable, "-B", "-c", code, str(self.h.conf.audit_log), str(self.h.conf.audit_key)],
                                 capture_output=True, text=True, timeout=20, check=True)
@@ -252,7 +252,7 @@ class ExecutionTest(unittest.TestCase):
         anyio.run(go)
 
     def test_cancellation_during_dispatch_leaves_recoverable_lock(self):
-        from torwaechter.confirm import Decision
+        from lookfirst.confirm import Decision
         async def go():
             async with self.h.client(None, {"bank": failing_bank(self.state, "timeout")}) as (_, _sessions):
                 with patch.object(self.h.confirmer, "ask", return_value=Decision(True, "web", actor="synthetic-human")):
@@ -270,7 +270,7 @@ class ExecutionConfigTest(unittest.TestCase):
         h = GateHarness()
         self.addCleanup(h.close)
         self.assertEqual(h.conf.upstream_timeout_seconds, 60)
-        path = h.dir / "torwaechter.yaml"
+        path = h.dir / "lookfirst.yaml"
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         data["execution"] = {"timeout_seconds": 1.25}
         path.write_text(yaml.safe_dump(data), encoding="utf-8")

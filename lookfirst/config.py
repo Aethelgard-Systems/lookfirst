@@ -1,6 +1,6 @@
 """Configuration (YAML). One file describes upstreams, rules, confirmation channels, read-back checks and the audit log.
 
-Example (see demo/torwaechter.yaml):
+Example (see demo/lookfirst.yaml):
 
     upstreams:
       bank: {command: "python", args: ["demo/bank_server.py"]}        # stdio
@@ -19,8 +19,8 @@ Example (see demo/torwaechter.yaml):
       web: {host: 127.0.0.1, port: 8477, identity_header: X-Forwarded-User}   # header optional (v1.1: verified actor)
       webhook: {url: "https://example.invalid/braucht-dich", token_file: "/path/token"}
     audit:
-      log: "./torwaechter-audit.jsonl"
-      key: "./torwaechter-ed25519.key"
+      log: "./lookfirst-audit.jsonl"
+      key: "./lookfirst-ed25519.key"
     redact: {hook: null}
     http: {token_file: "./private/http-token"}                        # needed for --transport http off loopback (#668 P2)
     schleuse:                                                          # Datenschutz-Schleuse (#604), optional
@@ -82,7 +82,7 @@ class Config:
     audit_log: Path
     audit_key: Path
     redact_hook: str | None
-    server_name: str = "torwaechter"
+    server_name: str = "lookfirst"
     schleuse: dict | None = None
     base: Path | None = None
     http_token_file: Path | None = None
@@ -152,8 +152,8 @@ def load(path: str | Path) -> Config:
         raise ConfigError("execution.timeout_seconds: finite positive number required")
     return Config(upstreams=ups, default_actions=dflt, tool_rules=tool_rules, timeout_seconds=float(conf.get("timeout_seconds", 120)),
                   elicitation=conf.get("elicitation", True) is not False, web=conf.get("web"), webhook=conf.get("webhook"),
-                  audit_log=base / str(audit.get("log", "torwaechter-audit.jsonl")), audit_key=base / str(audit.get("key", "torwaechter-ed25519.key")),
-                  redact_hook=(data.get("redact") or {}).get("hook"), server_name=str(data.get("name", "torwaechter")),
+                  audit_log=base / str(audit.get("log", "lookfirst-audit.jsonl")), audit_key=base / str(audit.get("key", "lookfirst-ed25519.key")),
+                  redact_hook=(data.get("redact") or {}).get("hook"), server_name=str(data.get("name", "lookfirst")),
                   schleuse=_schleuse(data.get("schleuse")), base=base,
                   http_token_file=base / str(http["token_file"]) if http.get("token_file") else None,
                   upstream_timeout_seconds=float(timeout))

@@ -1,17 +1,17 @@
 # 60-second screen recording – command sequence and expected output
 
-**Story:** an AI agent wants to move money. agent-gate (Torwächter) sits between the agent and the bank: the read passes, the
+**Story:** an AI agent wants to move money. agent-gate (lookfirst) sits between the agent and the bank: the read passes, the
 transfer stops for a human, is executed only after approval, read back, and every step lands in a signed log – edit one line
 and `verify-log` catches it.
 
-**Setup (off camera):** `pip install -e .` in `products/torwaechter/`; terminal ≈ 100×32, large font. Everything runs
+**Setup (off camera):** `pip install -e .` in `products/lookfirst/`; terminal ≈ 100×32, large font. Everything runs
 offline against the fake bank in `demo/bank_server.py` (synthetic data). `--keep` leaves the working files behind so the real
 CLI can be shown on the tampered log; `--yes` answers the approval question itself – for a live take leave it out and type `y`.
 
 ## Take 1 – approve (≈ 45 s)
 
 ```sh
-torwaechter demo --yes --keep /tmp/tw-demo
+lookfirst demo --yes --keep /tmp/tw-demo
 ```
 Expected output (ids and paths vary):
 ```text
@@ -22,8 +22,8 @@ Expected output (ids and paths vary):
 
 ▶ 2) Writing call `ueberweisung` → preview, your decision, execution, read-back
 
-┌─ Torwächter asks ─────────────────────────────
-│ Torwächter: Transfer 120.5 EUR to Demo GmbH
+┌─ lookfirst asks ─────────────────────────────
+│ lookfirst: Transfer 120.5 EUR to Demo GmbH
 │ Tool: ueberweisung
 │ Arguments: {"an": "Demo GmbH", "betrag": 120.5, "zweck": "Rechnung 42"}
 └───────────────────────────────────────────────
@@ -32,7 +32,7 @@ Approve? [y/N] y   (scripted)
 
 ▶ 3) Balance after: Saldo: 1129.50 EUR
 
-▶ 4) verify-log: OK – 8 signed, chained entries in torwaechter-audit.jsonl
+▶ 4) verify-log: OK – 8 signed, chained entries in lookfirst-audit.jsonl
     #1 allow     kontostand    allow    rule:kontostand
     #2 result    kontostand                                 passthrough
     #3 preview   ueberweisung  confirm  rule:ueberweisung
@@ -45,12 +45,12 @@ Approve? [y/N] y   (scripted)
 ▶ 5) Someone rewrites entry #4 – the decision – so it looks as if a human never approved …
     verify-log: TAMPERED – line 4: hash mismatch (entry modified)
 
-▶ Done. Working files are in /tmp/tw-demo – try: torwaechter verify-log --config /tmp/tw-demo/torwaechter.yaml
+▶ Done. Working files are in /tmp/tw-demo – try: lookfirst verify-log --config /tmp/tw-demo/lookfirst.yaml
 ```
 
 Then, on camera, the real verifier on the tampered file:
 ```sh
-torwaechter verify-log --config /tmp/tw-demo/torwaechter.yaml
+lookfirst verify-log --config /tmp/tw-demo/lookfirst.yaml
 ```
 ```text
 TAMPERED: 8 entries, 1 problem(s)
@@ -58,7 +58,7 @@ TAMPERED: 8 entries, 1 problem(s)
 ```
 (exit code 2). Optional extra 5 s – remove the sidecar and show that the verifier no longer gives a clean verdict:
 ```sh
-rm /tmp/tw-demo/torwaechter-audit.jsonl.head && torwaechter verify-log --config /tmp/tw-demo/torwaechter.yaml
+rm /tmp/tw-demo/lookfirst-audit.jsonl.head && lookfirst verify-log --config /tmp/tw-demo/lookfirst.yaml
 ```
 ```text
 TAMPERED: 8 entries, 1 problem(s), 1 warning(s)
@@ -69,7 +69,7 @@ TAMPERED: 8 entries, 1 problem(s), 1 warning(s)
 ## Take 2 – deny (≈ 15 s, alternative ending)
 
 ```sh
-torwaechter demo --no
+lookfirst demo --no
 ```
 ```text
 Approve? [y/N] n   (scripted)
@@ -83,12 +83,12 @@ Nothing executed, balance unchanged, and the preview + denial are still in the l
 
 | t | Screen | Say |
 |---|---|---|
-| 0–5 s | `torwaechter demo …` | "An AI agent wants to use a bank. agent-gate sits in between." |
+| 0–5 s | `lookfirst demo …` | "An AI agent wants to use a bank. agent-gate sits in between." |
 | 5–12 s | step 1 `gate: allowed` | "Reading is harmless – it passes through. Logged, not stopped." |
 | 12–30 s | the boxed question, `y` | "Writing stops. Preview: what, to whom, how much. Only a human unblocks it." |
 | 30–37 s | `"readback": "ok"` | "After executing, the gate reads the balance back. 'Done' only with proof." |
 | 37–50 s | step 4 (8 entries) → step 5 `TAMPERED – line 4` | "Every step is in a hash-chained, signed log. Rewrite who approved – caught." |
-| 50–58 s | `torwaechter verify-log …` → `TAMPERED` | "Anyone with the public key can verify. No trust in the operator needed." |
+| 50–58 s | `lookfirst verify-log …` → `TAMPERED` | "Anyone with the public key can verify. No trust in the operator needed." |
 | 58–60 s | README headline | "Preview, confirm, execute, read back, prove. Any MCP tool, any client." |
 
-The same sequence runs in CI (`.github/workflows/tests.yml`, job `torwaechter`), so the expected output above is checked on every push.
+The same sequence runs in CI (`.github/workflows/tests.yml`, job `lookfirst`), so the expected output above is checked on every push.

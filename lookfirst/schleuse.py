@@ -1,10 +1,10 @@
 """Datenschutz-Schleuse (#604): private Angaben verlassen das Haus nur als Platzhalter.
 
 Weg A – Ergebnis → Modell: Bevor eine Werkzeug-Antwort (Text und strukturierter Inhalt) an den KI-Client geht, werden
-erkannte private Angaben durch Platzhalter wie ``[[IBAN_3f9a1c]]`` ersetzt. Das gilt für jede Antwort des Torwächters,
+erkannte private Angaben durch Platzhalter wie ``[[IBAN_3f9a1c]]`` ersetzt. Das gilt für jede Antwort des lookfirsts,
 auch für Ablehnungs- und Rücklese-Texte.
 
-Weg B – Modell → lokales Werkzeug: Verwendet der Client einen Platzhalter in Argumenten, übersetzt der Torwächter ihn
+Weg B – Modell → lokales Werkzeug: Verwendet der Client einen Platzhalter in Argumenten, übersetzt der lookfirst ihn
 lokal zurück – aber nur Platzhalter, die **diese** Schleuse selbst ausgegeben hat. Ein unbekannter Platzhalter wird
 abgelehnt (das Modell kann keine Daten „erraten“ und auflösen lassen).
 

@@ -4,44 +4,44 @@
 mail, close a ticket) goes through: **preview → a human confirms → execution → read-back → tamper-evident audit log.**
 Reading actions pass through untouched.
 
-Torwächter is an [MCP](https://modelcontextprotocol.io) proxy: put it between any MCP client (Claude, ChatGPT, Cursor, your own
+lookfirst is an [MCP](https://modelcontextprotocol.io) proxy: put it between any MCP client (Claude, ChatGPT, Cursor, your own
 agent) and any MCP servers. Nothing changes on either side.
 
 ```
-AI client ──MCP──▶ Torwächter ──MCP──▶ upstream servers (bank, CRM, mail, files, …)
+AI client ──MCP──▶ lookfirst ──MCP──▶ upstream servers (bank, CRM, mail, files, …)
                       │
                       ├─ rules.yaml: allow | confirm | deny per tool (defaults from tool annotations)
                       ├─ confirmation: in-client (MCP elicitation) · local web page · webhook
                       ├─ read-back: re-read after writing → ok | unklar | fehlgeschlagen
-                      └─ audit log: JSONL, hash chain, Ed25519-signed  →  `torwaechter verify-log`
+                      └─ audit log: JSONL, hash chain, Ed25519-signed  →  `lookfirst verify-log`
 ```
 
 *Deutsche Fassung: [README.de.md](README.de.md). Architecture: [docs/architecture.md](docs/architecture.md).*
 
 ## Status
-0.2.0, as of October 31, 2026. Preparation for launch presentation early November 2026. Works end-to-end offline (demo below); prepared for local pilot (#609/#610, #807, #846). **NOT A PRODUCTION RELEASE:** subject to verification and authorization by MARCO (the former threshold of ≥ 1 week / ≥ 20 operations is no longer a mandatory gate since MARCO 31.10. "Kurzer Lieferweg"; readiness can still be tracked via `torwaechter pilot-status`). **License:** Apache-2.0 (MARCO decision 27.10.2026; see `LICENSE`). The license grants rights to use the code; it does not mean the build is released or the product name cleared.
+0.2.0, as of October 31, 2026. Preparation for launch presentation early November 2026. Works end-to-end offline (demo below); prepared for local pilot (#609/#610, #807, #846). **NOT A PRODUCTION RELEASE:** subject to verification and authorization by MARCO (the former threshold of ≥ 1 week / ≥ 20 operations is no longer a mandatory gate since MARCO 31.10. "Kurzer Lieferweg"; readiness can still be tracked via `lookfirst pilot-status`). **License:** Apache-2.0 (MARCO decision 27.10.2026; see `LICENSE`). The license grants rights to use the code; it does not mean the build is released or the product name cleared.
 
-Measure gate readiness at any time: `torwaechter pilot-status --config torwaechter.yaml`.
+Measure gate readiness at any time: `lookfirst pilot-status --config lookfirst.yaml`.
 
 ## Quick start (60 seconds, offline)
 
 ```bash
-pip install -e .            # or: uvx --from . torwaechter demo
-torwaechter demo
+pip install -e .            # or: uvx --from . lookfirst demo
+lookfirst demo
 ```
 
-The demo starts a fake bank MCP server, puts Torwächter in front of it and plays an agent: a balance check passes through,
+The demo starts a fake bank MCP server, puts lookfirst in front of it and plays an agent: a balance check passes through,
 a transfer stops for your `y/N`, the result is read back and verified, then one log line is edited and `verify-log`
 catches it. See [demo/VIDEO.md](demo/VIDEO.md) for the screen-recording script.
 
 ## Use it with a real client (5 minutes)
 
-1. Install once: `pipx install <path-or-git-url>/products/torwaechter` (or `pip install`). Gives you the `torwaechter` command.
-2. Copy [examples/torwaechter.yaml](examples/torwaechter.yaml) next to where the log should live; set upstreams, rules, confirmation channels.
-3. `torwaechter keygen --config torwaechter.yaml` – creates the Ed25519 signing key (0600) once.
+1. Install once: `pipx install <path-or-git-url>/products/lookfirst` (or `pip install`). Gives you the `lookfirst` command.
+2. Copy [examples/lookfirst.yaml](examples/lookfirst.yaml) next to where the log should live; set upstreams, rules, confirmation channels.
+3. `lookfirst keygen --config lookfirst.yaml` – creates the Ed25519 signing key (0600) once.
 4. Connect a client – ready-made snippets for **Claude Desktop**, **Claude Code** and **Antigravity** in [docs/clients.md](docs/clients.md)
-   (stdio: the client starts `torwaechter serve --config …`; HTTP: run `torwaechter serve --transport http --port 8470` yourself).
-5. Any time: `torwaechter verify-log --config torwaechter.yaml`.
+   (stdio: the client starts `lookfirst serve --config …`; HTTP: run `lookfirst serve --transport http --port 8470` yourself).
+5. Any time: `lookfirst verify-log --config lookfirst.yaml`.
 
 **Who approved (v1.1):** every decision is logged as `channel:actor` – `web:<user>` from an authenticating reverse-proxy header
 (`confirm.web.identity_header`) or a self-declared name on the page, `webhook:<actor>` from the decision body, `elicitation:<client>`
@@ -76,13 +76,13 @@ authentication, **not transport encryption**: beyond the local trusted host, put
 proxy with TLS, SSH tunnel, VPN) in front of the gate. What the gate does **not**
 protect against (other routes to the same system, same-user access to keys and rules): [docs/threat-model.md](docs/threat-model.md).
 
-Read-back (`rules.tools.<name>.readback`): after a confirmed write, Torwächter calls a *reading* tool and compares expected
+Read-back (`rules.tools.<name>.readback`): after a confirmed write, lookfirst calls a *reading* tool and compares expected
 fields (`$args.x`, `$result.y` placeholders). The result is `ok`, `unklar` (could not verify) or `fehlgeschlagen` (mismatch) and
-is returned to the client in `structuredContent.torwaechter` – a write is never reported as "done" without it.
+is returned to the client in `structuredContent.lookfirst` – a write is never reported as "done" without it.
 
 ## Privacy lock („Schleuse“, v0.3 preview)
 
-Private data leaves only as placeholders. Configure `schleuse:` (see `torwaechter/config.py`):
+Private data leaves only as placeholders. Configure `schleuse:` (see `lookfirst/config.py`):
 
 | Direction | What happens |
 |---|---|
@@ -124,7 +124,7 @@ ourselves is "supports technically with …".
 ## Relation to agent-postbox
 
 [agent-postbox](https://github.com/Aethelgard-Systems/agent-postbox) secures **hand-offs between agents** (who sent what to whom,
-countersigned). Torwächter secures **actions at tools** (what an agent is allowed to do to the world, confirmed by a human).
+countersigned). lookfirst secures **actions at tools** (what an agent is allowed to do to the world, confirmed by a human).
 Same family of trust tools, same evidence mindset; different seam. They compose: a hand-off can arrive via agent-postbox and the
 resulting action still passes the gate.
 
@@ -172,7 +172,7 @@ unlock a blocked pilot adapter; its operator procedure remains necessary.
 
 ## Update, rollback, errors
 
-**Check before every start or after every change:** `torwaechter check --config torwaechter.yaml [--timeout 10]` loads the
+**Check before every start or after every change:** `lookfirst check --config lookfirst.yaml [--timeout 10]` loads the
 configuration, checks rules, audit key, `http.token_file` (never printed), confirmation channels, Schleuse and redaction hook,
 and connects to every upstream once to list its tools. One line per check: `OK`, `WARN` (works, but look at it) or `ERROR`
 (will not work). Exit 0 without ERROR, 2 with ERROR. It does not start the gate and calls no tool.
@@ -181,19 +181,19 @@ and connects to every upstream once to list its tools. One line per check: `OK`,
 package – an update or rollback does not touch them. Copy those four files somewhere safe first.
 
 ```bash
-pip show torwaechter                                   # note the current version / commit
-pipx install --force <path-or-git-url>/products/torwaechter   # or: pip install -U <path>/products/torwaechter
-torwaechter check --config torwaechter.yaml
-torwaechter verify-log --config torwaechter.yaml
+pip show lookfirst                                   # note the current version / commit
+pipx install --force <path-or-git-url>/products/lookfirst   # or: pip install -U <path>/products/lookfirst
+lookfirst check --config lookfirst.yaml
+lookfirst verify-log --config lookfirst.yaml
 ```
 
 Then restart the client (stdio: the client starts the gate) or the `serve --transport http` process.
 
 **Rollback.** Install the previous version the same way, pinned to the commit you noted:
-`pipx install --force "git+<git-url>@<previous-commit>#subdirectory=products/torwaechter"`, then `check` and `verify-log`
+`pipx install --force "git+<git-url>@<previous-commit>#subdirectory=products/lookfirst"`, then `check` and `verify-log`
 again. Never create a new key to "fix" a problem: old entries can only be verified with the old `.pub`.
 
-**What a tool call result means** (`structuredContent.torwaechter`):
+**What a tool call result means** (`structuredContent.lookfirst`):
 
 | Result | What happened | What to do |
 |---|---|---|
@@ -208,7 +208,7 @@ again. Never create a new key to "fix" a problem: old entries can only be verifi
 
 | Message | Meaning | What to do |
 |---|---|---|
-| `audit key missing … run torwaechter keygen` | no signing key yet | `torwaechter keygen --config …` once (not when restoring – restore the backup instead) |
+| `audit key missing … run lookfirst keygen` | no signing key yet | `lookfirst keygen --config …` once (not when restoring – restore the backup instead) |
 | `… action must be one of ('allow', 'confirm', 'deny')` | typo in a rule | fix the named rule |
 | `rule '…' matches no tool` (WARN) | the rule does nothing; a `deny` falls back to the default | use the exact tool name; with several upstreams `<upstream>__<tool>` |
 | `upstream … not reachable` | server not started, wrong command/URL, or no answer in time | start the server, fix `command`/`url`, raise `--timeout` |
@@ -222,5 +222,5 @@ again. Never create a new key to "fix" a problem: old entries can only be verifi
 `python -m unittest discover -s tests` – 95 tests, synthetic data, in-memory MCP plus one real stdio subprocess: rules,
 parameter binding (`args_sha256`), approve/deny/timeout, web + webhook channel, read-back ok/unklar/fehlgeschlagen, log tampering
 (modified, removed, reordered, inserted lines, forged signature, truncated, foreign key), read calls pass through unchanged, multiple upstreams,
-HTTP bearer token, Schleuse (masking, placeholders, session binding, credentials), `torwaechter check`, `torwaechter pilot-status`,
+HTTP bearer token, Schleuse (masking, placeholders, session binding, credentials), `lookfirst check`, `lookfirst pilot-status`,
 and launch gate evaluation.

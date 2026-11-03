@@ -5,7 +5,7 @@ from pathlib import Path
 
 import anyio
 
-from torwaechter import cli, config as cfg, httpauth
+from lookfirst import cli, config as cfg, httpauth
 
 TOKEN = b"t" * 40
 

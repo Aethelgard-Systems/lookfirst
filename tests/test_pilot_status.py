@@ -1,4 +1,4 @@
-"""Tests for torwaechter pilot-status and launch gate evaluation (#609/#807)."""
+"""Tests for lookfirst pilot-status and launch gate evaluation (#609/#807)."""
 from __future__ import annotations
 
 import io
@@ -9,12 +9,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from torwaechter import audit, cli, config as cfg
-from torwaechter.pilot import evaluate_pilot_status
+from lookfirst import audit, cli, config as cfg
+from lookfirst.pilot import evaluate_pilot_status
 
 
 def make_conf_and_keys(d: Path) -> cfg.Config:
-    conf_path = d / "torwaechter.yaml"
+    conf_path = d / "lookfirst.yaml"
     key_path = d / "audit.key"
     log_path = d / "audit.jsonl"
     conf_path.write_text(f"""
@@ -48,14 +48,14 @@ class TestPilotStatus(unittest.TestCase):
 
     def test_demo_entries_do_not_count_as_real_operations(self):
         """Demo log entries (offline bank demo) must NEVER count as real operations."""
-        from torwaechter import demo
+        from lookfirst import demo
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp)
             rc = demo.run_demo(answer="y", keep=str(d))
             self.assertEqual(rc, 0)
             
             # Die Demo manipuliert am Ende absichtlich Zeile 6. Wir prüfen das Log mit den Demo-Einträgen.
-            conf_path = d / "torwaechter.yaml"
+            conf_path = d / "lookfirst.yaml"
             conf = cfg.load(conf_path)
             rep = evaluate_pilot_status(conf)
             self.assertEqual(rep.real_operations_total, 0, "Demo-Tools/Akteure dürfen nicht als echte Vorgänge zählen")
@@ -257,7 +257,7 @@ class TestPilotStatus(unittest.TestCase):
             log.append("preview", "tw-1", "aufgabe_anlegen", decision="confirm")
             log.append("decision", "tw-1", "aufgabe_anlegen", decision="approve", by="web:marco")
 
-            conf_path = str(d / "torwaechter.yaml")
+            conf_path = str(d / "lookfirst.yaml")
 
             # 1. Standardaufruf: kurz + JSON
             buf = io.StringIO()
@@ -265,7 +265,7 @@ class TestPilotStatus(unittest.TestCase):
                 rc = cli.main(["pilot-status", "--config", conf_path])
             self.assertEqual(rc, 0)
             out = buf.getvalue()
-            self.assertIn("[torwaechter pilot-status] Gate-Ampel:", out)
+            self.assertIn("[lookfirst pilot-status] Gate-Ampel:", out)
             self.assertIn("JSON:", out)
             self.assertIn('"gate":', out)
 

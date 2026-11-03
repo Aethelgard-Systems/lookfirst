@@ -4,43 +4,43 @@
 Mail senden, Ticket schließen) läuft durch: **Vorschau → ein Mensch bestätigt → Ausführung → Rücklesen → fälschungssicheres
 Prüfprotokoll.** Lesende Aktionen laufen unverändert durch.
 
-Torwächter ist ein [MCP](https://modelcontextprotocol.io)-Proxy: zwischen beliebigem MCP-Client (Claude, ChatGPT, Cursor, eigener
+lookfirst ist ein [MCP](https://modelcontextprotocol.io)-Proxy: zwischen beliebigem MCP-Client (Claude, ChatGPT, Cursor, eigener
 Agent) und beliebigen MCP-Servern. Auf beiden Seiten ändert sich nichts.
 
 ```
-KI-Client ──MCP──▶ Torwächter ──MCP──▶ Upstream-Server (Bank, CRM, Mail, Dateien, …)
+KI-Client ──MCP──▶ lookfirst ──MCP──▶ Upstream-Server (Bank, CRM, Mail, Dateien, …)
                       │
                       ├─ Regeldatei YAML: allow | confirm | deny je Werkzeug (Standard aus Tool-Annotationen)
                       ├─ Bestätigung: im Client (MCP-Elicitation) · lokale Freigabeseite · Webhook
                       ├─ Rücklesen: nach dem Schreiben erneut lesen → ok | unklar | fehlgeschlagen
-                      └─ Protokoll: JSONL, Hash-Kette, Ed25519-signiert → `torwaechter verify-log`
+                      └─ Protokoll: JSONL, Hash-Kette, Ed25519-signiert → `lookfirst verify-log`
 ```
 
 *English version: [README.md](README.md). Architektur: [docs/architecture.md](docs/architecture.md).*
 
 ## Stand
-0.2.0, Stand 31. Oktober 2026. Vorbereitung Launch-Vorstellung Anfang November 2026. Läuft offline Ende-zu-Ende (Demo unten); vorbereitet für den lokalen Piloten (#609/#610, #807, #846). **KEIN PRODUKTIONSRELEASE:** echter Produktiveinsatz unterliegt gezielten Tests und Freigabe durch MARCO (die frühere Mindestwartephase von ≥ 1 Woche / ≥ 20 Vorgängen ist seit MARCO 31.10. „Kurzer Lieferweg“ keine Pflichtschwelle mehr; Messung des Reifegrads weiterhin über `torwaechter pilot-status`). **Lizenz:** Apache-2.0 (Entscheidung MARCO 27.10.2026; siehe `LICENSE`). Die Lizenz räumt Nutzungsrechte am Code ein; sie bedeutet weder, dass der Build freigegeben, noch dass der Produktname geklärt ist.
+0.2.0, Stand 31. Oktober 2026. Vorbereitung Launch-Vorstellung Anfang November 2026. Läuft offline Ende-zu-Ende (Demo unten); vorbereitet für den lokalen Piloten (#609/#610, #807, #846). **KEIN PRODUKTIONSRELEASE:** echter Produktiveinsatz unterliegt gezielten Tests und Freigabe durch MARCO (die frühere Mindestwartephase von ≥ 1 Woche / ≥ 20 Vorgängen ist seit MARCO 31.10. „Kurzer Lieferweg“ keine Pflichtschwelle mehr; Messung des Reifegrads weiterhin über `lookfirst pilot-status`). **Lizenz:** Apache-2.0 (Entscheidung MARCO 27.10.2026; siehe `LICENSE`). Die Lizenz räumt Nutzungsrechte am Code ein; sie bedeutet weder, dass der Build freigegeben, noch dass der Produktname geklärt ist.
 
-Messung des Gate-Reifegrads jederzeit über: `torwaechter pilot-status --config torwaechter.yaml`.
+Messung des Gate-Reifegrads jederzeit über: `lookfirst pilot-status --config lookfirst.yaml`.
 
 ## Schnellstart (60 Sekunden, offline)
 
 ```bash
-pip install -e .            # oder: uvx --from . torwaechter demo
-torwaechter demo
+pip install -e .            # oder: uvx --from . lookfirst demo
+lookfirst demo
 ```
 
-Die Demo startet eine Fake-Bank als MCP-Server, stellt Torwächter davor und spielt einen Agenten: Kontostand läuft durch,
+Die Demo startet eine Fake-Bank als MCP-Server, stellt lookfirst davor und spielt einen Agenten: Kontostand läuft durch,
 eine Überweisung stoppt für dein `y/N`, das Ergebnis wird rückgelesen, dann wird eine Protokollzeile verändert und
 `verify-log` erkennt es. Drehbuch fürs Bildschirmvideo: [demo/VIDEO.md](demo/VIDEO.md).
 
 ## Mit echtem Client
 
-1. `torwaechter.yaml` schreiben (Vorlage: [demo/torwaechter.yaml](demo/torwaechter.yaml)): Upstreams, Regeln, Bestätigungskanäle, Pfade.
-2. `torwaechter keygen --config torwaechter.yaml` – einmalig den Ed25519-Schlüssel (0600) erzeugen.
-3. `torwaechter serve --config torwaechter.yaml` (stdio) oder `--transport http --port 8470` (Streamable HTTP unter `/mcp`).
-4. Den Client auf Torwächter statt auf den Upstream zeigen lassen.
-5. Jederzeit: `torwaechter verify-log --config torwaechter.yaml`.
+1. `lookfirst.yaml` schreiben (Vorlage: [demo/lookfirst.yaml](demo/lookfirst.yaml)): Upstreams, Regeln, Bestätigungskanäle, Pfade.
+2. `lookfirst keygen --config lookfirst.yaml` – einmalig den Ed25519-Schlüssel (0600) erzeugen.
+3. `lookfirst serve --config lookfirst.yaml` (stdio) oder `--transport http --port 8470` (Streamable HTTP unter `/mcp`).
+4. Den Client auf lookfirst statt auf den Upstream zeigen lassen.
+5. Jederzeit: `lookfirst verify-log --config lookfirst.yaml`.
 
 ## Wie ein Aufruf entschieden wird
 
@@ -72,15 +72,15 @@ anderen geschützten Transport (Reverse-Proxy mit TLS, SSH-Tunnel, VPN) vorschal
 das Gate **nicht** schützt (andere Wege zum selben System, Zugriff desselben Nutzers auf Schlüssel und Regeln):
 [docs/threat-model.md](docs/threat-model.md).
 
-Rücklesen (`rules.tools.<name>.readback`): nach einer bestätigten Schreibaktion ruft Torwächter ein *Lese*-Werkzeug auf und
+Rücklesen (`rules.tools.<name>.readback`): nach einer bestätigten Schreibaktion ruft lookfirst ein *Lese*-Werkzeug auf und
 vergleicht erwartete Felder (`$args.x`, `$result.y`). Ergebnis `ok`, `unklar` (nicht prüfbar) oder `fehlgeschlagen` (Abweichung),
-zurückgegeben in `structuredContent.torwaechter` – nie „erledigt“ ohne Beleg.
+zurückgegeben in `structuredContent.lookfirst` – nie „erledigt“ ohne Beleg.
 
 ## Datenschutz-Schleuse (Vorschau v0.3)
 
 Private Angaben verlassen das Haus nur als Platzhalter (`schleuse:` in der Konfiguration):
 Werkzeug-Antworten an den KI-Client werden maskiert (IBAN mit Prüfziffer, Kartennummern, E-Mail, Telefon, Zugangsdaten mit bekannter Form – Schlüssel von GitHub/OpenAI/Anthropic/AWS u. a., JWT, private Schlüssel; bei `password=…`, `api_key: …`, `Authorization: Bearer …` und `nutzer:kennwort@`-Adressen nur der Wert; in strukturierten Antworten auch Werte unter Schlüsseln wie `password`/`token`/`api_key`. Nicht erkannt: freie Geheimnisse ohne bekannte Form oder Schlüsselnamen –, eigene Namensliste,
-eigene Muster), auch in Vorschau, Ablehnungstexten und Protokoll. Nutzt der Client einen Platzhalter, löst der Torwächter
+eigene Muster), auch in Vorschau, Ablehnungstexten und Protokoll. Nutzt der Client einen Platzhalter, löst der lookfirst
 ihn lokal auf – nur selbst ausgegebene; unbekannte werden abgelehnt. Grenze: reduziert den Abfluss, anonymisiert nicht
 vollständig (Beträge, Daten, Händler bleiben deutbar). Argumente an externe Werkzeuge werden noch nicht maskiert.
 Werkzeug-Metadaten (alles außer dem Namen) werden ebenfalls maskiert. Sitzungstrennung bei mehreren HTTP-Clients ist
@@ -114,13 +114,13 @@ Anforderung → Funktion → Beleg im Protokoll → Lücke. Keine Rechtsberatung
 ## Abgrenzung zu agent-postbox
 
 [agent-postbox](https://github.com/Aethelgard-Systems/agent-postbox) sichert **Übergaben zwischen Agenten** (wer hat was an wen
-übergeben, gegengezeichnet). Torwächter sichert **Aktionen an Werkzeugen** (was ein Agent an der Welt tun darf, von einem
+übergeben, gegengezeichnet). lookfirst sichert **Aktionen an Werkzeugen** (was ein Agent an der Welt tun darf, von einem
 Menschen bestätigt). Gleiche Familie „Trust-Tools“, gleiche Beleg-Denke, andere Naht. Beides passt zusammen: eine Übergabe kommt
 über agent-postbox, die daraus folgende Aktion läuft trotzdem durch das Tor.
 
 ## Update, Rückweg, Fehler
 
-**Vor jedem Start oder nach jeder Änderung prüfen:** `torwaechter check --config torwaechter.yaml [--timeout 10]` lädt die
+**Vor jedem Start oder nach jeder Änderung prüfen:** `lookfirst check --config lookfirst.yaml [--timeout 10]` lädt die
 Konfiguration, prüft Regeln, Prüfschlüssel, `http.token_file` (wird nie ausgegeben), Freigabekanäle, Schleuse und
 Schwärzungs-Hook und verbindet sich einmal mit jedem Upstream, um dessen Werkzeuge abzurufen. Eine Zeile je Prüfpunkt (Ausgabe
 englisch wie alle Meldungen): `OK` = in Ordnung, `WARN` = läuft, aber anschauen, `ERROR` = **Fehler**, läuft so nicht.
@@ -130,19 +130,19 @@ Exit 0 ohne ERROR, 2 mit ERROR. Startet das Gate nicht und ruft kein Werkzeug au
 nicht im Paket – Update und Rückweg fassen sie nicht an. Diese vier Dateien vorher wegsichern.
 
 ```bash
-pip show torwaechter                                   # aktuelle Version / Commit notieren
-pipx install --force <pfad-oder-git-url>/products/torwaechter   # oder: pip install -U <pfad>/products/torwaechter
-torwaechter check --config torwaechter.yaml
-torwaechter verify-log --config torwaechter.yaml
+pip show lookfirst                                   # aktuelle Version / Commit notieren
+pipx install --force <pfad-oder-git-url>/products/lookfirst   # oder: pip install -U <pfad>/products/lookfirst
+lookfirst check --config lookfirst.yaml
+lookfirst verify-log --config lookfirst.yaml
 ```
 
 Danach den Client neu starten (stdio: der Client startet das Gate) bzw. den `serve --transport http`-Prozess.
 
 **Rückweg.** Vorige Version genauso installieren, auf den notierten Commit festgelegt:
-`pipx install --force "git+<git-url>@<voriger-commit>#subdirectory=products/torwaechter"`, danach wieder `check` und `verify-log`.
+`pipx install --force "git+<git-url>@<voriger-commit>#subdirectory=products/lookfirst"`, danach wieder `check` und `verify-log`.
 Nie einen neuen Schlüssel erzeugen, um ein Problem zu „lösen“: alte Einträge sind nur mit der alten `.pub` prüfbar.
 
-**Was ein Werkzeug-Ergebnis bedeutet** (`structuredContent.torwaechter`):
+**Was ein Werkzeug-Ergebnis bedeutet** (`structuredContent.lookfirst`):
 
 | Ergebnis | Was passiert ist | Was tun |
 |---|---|---|
@@ -157,7 +157,7 @@ Nie einen neuen Schlüssel erzeugen, um ein Problem zu „lösen“: alte Eintr�
 
 | Meldung | Bedeutung | Was tun |
 |---|---|---|
-| `audit key missing … run torwaechter keygen` | noch kein Signaturschlüssel | einmalig `torwaechter keygen --config …` (nicht nach Verlust – dann Sicherung zurückspielen) |
+| `audit key missing … run lookfirst keygen` | noch kein Signaturschlüssel | einmalig `lookfirst keygen --config …` (nicht nach Verlust – dann Sicherung zurückspielen) |
 | `… action must be one of ('allow', 'confirm', 'deny')` | Tippfehler in einer Regel | genannte Regel korrigieren |
 | `rule '…' matches no tool` (WARN) | Regel wirkt nicht; ein `deny` fällt auf den Standard zurück | genauen Werkzeugnamen nutzen; bei mehreren Upstreams `<upstream>__<werkzeug>` |
 | `upstream … not reachable` | Server nicht gestartet, falscher Befehl/URL oder keine Antwort im Zeitlimit | Server starten, `command`/`url` korrigieren, `--timeout` erhöhen |
@@ -172,4 +172,4 @@ Nie einen neuen Schlüssel erzeugen, um ein Problem zu „lösen“: alte Eintr�
 Parameterbindung (`args_sha256`), Freigabe ja/nein/Timeout, Web- und Webhook-Kanal, Rücklesen ok/unklar/fehlgeschlagen, Protokollintegrität
 (Manipulationserkennung bei veränderten, entfernten, umsortierten, eingefügten Zeilen, gefälschter Signatur, Abschneiden oder fremdem Schlüssel),
 Lesezugriffe unverändert durchgeleitet, mehrere Upstreams, HTTP-Bearer-Token, Schleuse (Maskierung, Platzhalter, Sitzungsbindung, Zugangsdaten),
-`torwaechter check`, `torwaechter pilot-status` und Launch-Gate-Messung.
+`lookfirst check`, `lookfirst pilot-status` und Launch-Gate-Messung.

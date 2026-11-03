@@ -1,4 +1,4 @@
-"""Scripted offline demo (``torwaechter demo``): starts the fake bank, puts the gate in front of it, and plays an MCP client
+"""Scripted offline demo (``lookfirst demo``): starts the fake bank, puts the gate in front of it, and plays an MCP client
 that (1) reads the balance – passes through, (2) tries a transfer – you approve or deny in the terminal, (3) shows the
 read-back verdict and (4) verifies the audit log, then tampers with one line and verifies again. ~60 seconds."""
 from __future__ import annotations
@@ -44,16 +44,16 @@ def find_decision_index(lines: list[str]) -> int:
 async def _run(workdir: Path, answer: str | None = None):
     """``answer``: None = ask in the terminal; "y"/"n" = scripted (recordings, CI)."""
     shutil.copy(DEMO_DIR / "bank_server.py", workdir / "bank_server.py")
-    shutil.copy(DEMO_DIR / "torwaechter.yaml", workdir / "torwaechter.yaml")
+    shutil.copy(DEMO_DIR / "lookfirst.yaml", workdir / "lookfirst.yaml")
     shutil.copy(DEMO_DIR / "namen.txt", workdir / "namen.txt")
-    conf = cfg.load(workdir / "torwaechter.yaml")
+    conf = cfg.load(workdir / "lookfirst.yaml")
     conf.web = None
     audit.generate_key(conf.audit_key)
     log = audit.AuditLog(conf.audit_log, audit.load_private(conf.audit_key))
     confirmer = Confirmer(PendingRegistry(), conf.timeout_seconds, True, False, None)
 
     async def ask_terminal(ctx, params):
-        print("\n┌─ Torwächter asks ─────────────────────────────")
+        print("\n┌─ lookfirst asks ─────────────────────────────")
         print("│ " + params.message.replace("\n", "\n│ "))
         print("└───────────────────────────────────────────────")
         if answer is None:
@@ -74,10 +74,10 @@ async def _run(workdir: Path, answer: str | None = None):
                     say("Tools behind the gate: " + ", ".join(x.name for x in (await cs.list_tools()).tools))
                     say("1) Read-only call `kontostand` → passes through without questions")
                     r = await cs.call_tool("kontostand", {})
-                    print("   ", r.content[0].text, "| gate:", r.structured_content["torwaechter"]["status"])
+                    print("   ", r.content[0].text, "| gate:", r.structured_content["lookfirst"]["status"])
                     say("2) Writing call `ueberweisung` → preview, your decision, execution, read-back")
                     r = await cs.call_tool("ueberweisung", {"an": "Demo GmbH", "betrag": 120.5, "zweck": "Rechnung 42"})
-                    g = r.structured_content["torwaechter"]
+                    g = r.structured_content["lookfirst"]
                     print("   ", r.content[0].text, "| gate:", json.dumps(g, ensure_ascii=False))
                     say("3) Balance after: " + (await cs.call_tool("kontostand", {})).content[0].text)
                     if gate._make_schleuse is not None:
@@ -105,18 +105,18 @@ async def _run(workdir: Path, answer: str | None = None):
     conf.audit_log.write_text("\n".join(lines) + "\n", encoding="utf-8")
     ok, problems, n = audit.verify(conf.audit_log, pub)
     print(f"    verify-log: {'OK' if ok else 'TAMPERED'} – " + "; ".join(f"line {p.line}: {p.reason}" for p in problems))
-    say(f"Done. Working files are in {workdir} – try: torwaechter verify-log --config {workdir / 'torwaechter.yaml'}")
+    say(f"Done. Working files are in {workdir} – try: lookfirst verify-log --config {workdir / 'lookfirst.yaml'}")
 
 
 def run_demo(answer: str | None = None, keep: str | None = None) -> int:
     """``answer`` "y"/"n" skips the terminal question (scripted run); ``keep`` is a directory that is left behind afterwards so
-    the real CLI (``torwaechter verify-log --config <keep>/torwaechter.yaml``) can be shown on the tampered log."""
+    the real CLI (``lookfirst verify-log --config <keep>/lookfirst.yaml``) can be shown on the tampered log."""
     try:
         if keep:
             d = Path(keep); d.mkdir(parents=True, exist_ok=True)
             anyio.run(_run, d, answer)
         else:
-            with tempfile.TemporaryDirectory(prefix="torwaechter-demo-") as d:
+            with tempfile.TemporaryDirectory(prefix="lookfirst-demo-") as d:
                 anyio.run(_run, Path(d), answer)
     except KeyboardInterrupt:
         print("\naborted", file=sys.stderr)

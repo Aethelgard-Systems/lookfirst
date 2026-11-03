@@ -1,6 +1,6 @@
-"""#668 P1: Torwächter Zwei-Client-Test.
+"""#668 P1: lookfirst Zwei-Client-Test.
 
-Zwei MCP-Clients am selben Torwächter:
+Zwei MCP-Clients am selben lookfirst:
 - Jede Freigabe darf nur genau einmal wirken (Single-Use-Invariante).
 - Eine Freigabe für Client A schaltet Client B niemals frei.
 - Serialisierung und Parallellauf: Werkzeugaufrufe beider Clients erhalten getrennte
@@ -23,7 +23,7 @@ def run(coro):
 
 
 def gate_of(res):
-    return res.structured_content["torwaechter"]
+    return res.structured_content["lookfirst"]
 
 
 class ZweiClientsFreigabeTest(unittest.TestCase):
@@ -114,7 +114,7 @@ class ZweiClientsFreigabeTest(unittest.TestCase):
         self.assertTrue(self.h.verify()[0])
 
     def test_serialisierte_anfragen_zweier_clients_verlangen_zwei_unabhaengige_freigaben(self):
-        """P1: Beide Clients fordern parallel dasselbe Schreibwerkzeug an. Torwächter serialisiert und
+        """P1: Beide Clients fordern parallel dasselbe Schreibwerkzeug an. lookfirst serialisiert und
         erfordert für jeden Client eine eigenständige Freigabe; eine Freigabe führt zu genau 1 Ausführung."""
         async def go():
             async with self.h.two_clients() as (ca, cb, gate):

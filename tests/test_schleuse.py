@@ -11,8 +11,8 @@ from mcp.server.lowlevel import Server
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tests.helpers import GateHarness  # noqa: E402
-from tests.test_torwaechter import accept, gate_of, run  # noqa: E402
-from torwaechter.schleuse import Schleuse, SchleuseError  # noqa: E402
+from tests.test_lookfirst import accept, gate_of, run  # noqa: E402
+from lookfirst.schleuse import Schleuse, SchleuseError  # noqa: E402
 
 IBAN = "DE89 3704 0044 0532 0130 00"      # Standard-Beispiel-IBAN (gültige Prüfziffer, kein echtes Konto)
 IBAN2 = "GB82WEST12345698765432"
@@ -123,8 +123,8 @@ class Gate(unittest.TestCase):
         self.assertTrue(self.h.verify()[0])
 
     def test_review608_audit_free_text_tool_list_and_session_binding(self):
-        self.h.conf.tool_rules["ueberweisung"] = __import__("torwaechter.config", fromlist=["ToolRule"]).ToolRule(
-            action="confirm", readback=__import__("torwaechter.config", fromlist=["Readback"]).Readback(
+        self.h.conf.tool_rules["ueberweisung"] = __import__("lookfirst.config", fromlist=["ToolRule"]).ToolRule(
+            action="confirm", readback=__import__("lookfirst.config", fromlist=["Readback"]).Readback(
                 tool="konto_suchen", args={"iban": IBAN2}, expect={"iban": "$args.iban"}))
 
         async def go():

@@ -1,4 +1,4 @@
-"""#668 P6: ``torwaechter check`` – understandable output, exit codes, no secrets. Synthetic data only."""
+"""#668 P6: ``lookfirst check`` – understandable output, exit codes, no secrets. Synthetic data only."""
 from __future__ import annotations
 
 import contextlib
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import yaml
 
-from torwaechter import audit, check, cli
+from lookfirst import audit, check, cli
 from tests.helpers import DEFAULT_RULES, bank_server, serve_in_memory
 
 DEMO = Path(__file__).resolve().parent.parent / "demo"
@@ -34,7 +34,7 @@ class CheckTest(unittest.TestCase):
                 "confirm": {"timeout_seconds": 5, "elicitation": True, "web": {"host": "127.0.0.1", "port": 8477}},
                 "audit": {"log": "audit.jsonl", "key": "key.pem"}}
         base.update(data)
-        path = self.dir / "torwaechter.yaml"
+        path = self.dir / "lookfirst.yaml"
         path.write_text(yaml.safe_dump(base), encoding="utf-8")
         if key and not (self.dir / "key.pem").exists():
             audit.generate_key(self.dir / "key.pem")
@@ -56,7 +56,7 @@ class CheckTest(unittest.TestCase):
         code, out = check.run(path, probe=in_memory_probe)
         self.assertEqual(code, 2)
         line = next(x for x in out.splitlines() if x.startswith("ERROR  audit key"))
-        self.assertIn(f"torwaechter keygen --config {path}", line)
+        self.assertIn(f"lookfirst keygen --config {path}", line)
 
     def test_good_config_exit_0_and_unmatched_rule_is_warning(self):
         code, out = check.run(self.write({}), probe=in_memory_probe)
@@ -118,16 +118,16 @@ class CheckTest(unittest.TestCase):
         """End to end through the CLI with the demo bank as a real subprocess."""
         for f in ("bank_server.py", "namen.txt"):
             (self.dir / f).write_text((DEMO / f).read_text(encoding="utf-8"), encoding="utf-8")
-        data = yaml.safe_load((DEMO / "torwaechter.yaml").read_text(encoding="utf-8"))
+        data = yaml.safe_load((DEMO / "lookfirst.yaml").read_text(encoding="utf-8"))
         data["upstreams"]["bank"]["command"] = sys.executable
-        (self.dir / "torwaechter.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
-        args = ["check", "--config", str(self.dir / "torwaechter.yaml"), "--timeout", "20"]
+        (self.dir / "lookfirst.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
+        args = ["check", "--config", str(self.dir / "lookfirst.yaml"), "--timeout", "20"]
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             self.assertEqual(cli.main(args), 2)  # no key yet
-        self.assertIn("torwaechter keygen", buf.getvalue())
+        self.assertIn("lookfirst keygen", buf.getvalue())
         with contextlib.redirect_stdout(io.StringIO()):
-            cli.main(["keygen", "--config", str(self.dir / "torwaechter.yaml")])
+            cli.main(["keygen", "--config", str(self.dir / "lookfirst.yaml")])
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             self.assertEqual(cli.main(args), 0, buf.getvalue())

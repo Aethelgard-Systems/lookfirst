@@ -1,4 +1,4 @@
-"""Torwächter V1 tests – synthetic data, in-memory MCP client/servers. Run: python -m unittest discover tests"""
+"""lookfirst V1 tests – synthetic data, in-memory MCP client/servers. Run: python -m unittest discover tests"""
 from __future__ import annotations
 
 import io
@@ -12,8 +12,8 @@ import mcp.types as t
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tests.helpers import DEFAULT_RULES, GateHarness, bank_server  # noqa: E402
-from torwaechter import audit, config as cfg, readback, rules  # noqa: E402
-from torwaechter.config import Readback  # noqa: E402
+from lookfirst import audit, config as cfg, readback, rules  # noqa: E402
+from lookfirst.config import Readback  # noqa: E402
 
 
 def run(coro):
@@ -29,7 +29,7 @@ def accept(approve: bool, delay: float = 0):
 
 
 def gate_of(res):
-    return res.structured_content["torwaechter"]
+    return res.structured_content["lookfirst"]
 
 
 class RulesTest(unittest.TestCase):
@@ -70,7 +70,7 @@ class GateTest(unittest.TestCase):
                 direct = await ups["bank"].call_tool("kontostand", {})
                 via = await cs.call_tool("kontostand", {})
                 self.assertEqual([c.text for c in via.content], [c.text for c in direct.content])
-                self.assertEqual({k: v for k, v in via.structured_content.items() if k != "torwaechter"}, direct.structured_content)
+                self.assertEqual({k: v for k, v in via.structured_content.items() if k != "lookfirst"}, direct.structured_content)
                 self.assertEqual(gate_of(via)["status"], "allowed")
                 self.assertEqual([x.name for x in (await cs.list_tools()).tools], ["kontostand", "ueberweisung", "notiz", "loeschen"])
         run(go())
@@ -213,8 +213,8 @@ class GateTest(unittest.TestCase):
 
     def test_audit_nacht04_webhook_endpoint_rejects_bad_json_and_oversize(self):
         from starlette.testclient import TestClient
-        from torwaechter import redact
-        from torwaechter.web import create_app
+        from lookfirst import redact
+        from lookfirst.web import create_app
         h = GateHarness(webhook={"url": "https://braucht-dich.invalid/hook"}, web_enabled=True, opener=lambda req, timeout: io.BytesIO(b"{}")); self.addCleanup(h.close)
         c = TestClient(create_app(h.registry, h.confirmer, redact.identity), base_url="http://127.0.0.1:8477")
         self.assertEqual(c.post("/decision/tw-x", content=b"{not json").status_code, 400)
@@ -227,9 +227,9 @@ class GateTest(unittest.TestCase):
         """Review #304 P1/P2: DNS-Rebinding (fremder Host) und Cross-Site-Anfragen werden abgewiesen; ein Webhook-Token gilt nur für
         seinen Aufruf; Webhook-URLs müssen https sein."""
         from starlette.testclient import TestClient
-        from torwaechter import redact
-        from torwaechter.confirm import Confirmer
-        from torwaechter.web import create_app
+        from lookfirst import redact
+        from lookfirst.confirm import Confirmer
+        from lookfirst.web import create_app
         h = GateHarness(webhook={"url": "https://braucht-dich.invalid/hook"}, web_enabled=True, opener=lambda req, timeout: io.BytesIO(b"{}")); self.addCleanup(h.close)
         c = TestClient(create_app(h.registry, h.confirmer, redact.identity, "127.0.0.1", 8477), base_url="http://127.0.0.1:8477", follow_redirects=False)
         p1 = h.registry.open({"id": "tw-1", "tool": "ueberweisung", "arguments": {"an": "x"}, "summary": "s", "args_sha256": "0" * 64, "action": "confirm", "reason": "r"})
@@ -262,8 +262,8 @@ class GateTest(unittest.TestCase):
         """v1.1 (#291, Compliance-Lücke aus #355): wer entschieden hat, steht als ``kanal:akteur`` im Protokoll und in der Antwort –
         Web: SSO-Header (verifiziert) oder Formularname (self-declared); Webhook: ``actor`` im Body; Elicitation: MCP-Client-Name."""
         from starlette.testclient import TestClient
-        from torwaechter import redact
-        from torwaechter.web import create_app
+        from lookfirst import redact
+        from lookfirst.web import create_app
         h = GateHarness(webhook={"url": "https://braucht-dich.invalid/hook"}, web_enabled=True, opener=lambda req, timeout: io.BytesIO(b"{}")); self.addCleanup(h.close)
         # Web mit SSO-Header: Formularname zählt nicht, Header zählt; bösartige Header-Werte werden verworfen → 400
         c = TestClient(create_app(h.registry, h.confirmer, redact.identity, "127.0.0.1", 8477, identity_header="X-Forwarded-User"), base_url="http://127.0.0.1:8477", follow_redirects=False)
@@ -349,8 +349,8 @@ class FreigabeBindungTest(unittest.TestCase):
 
     def test_webhook_entscheidung_braucht_passenden_args_hash(self):
         from starlette.testclient import TestClient
-        from torwaechter import preview as pv, redact
-        from torwaechter.web import create_app
+        from lookfirst import preview as pv, redact
+        from lookfirst.web import create_app
         posted = []
         h = self.webhook_harness(posted); self.addCleanup(h.close)
         h.confirmer.timeout = 3
@@ -377,8 +377,8 @@ class FreigabeBindungTest(unittest.TestCase):
 
     def test_webseite_freigabe_braucht_passenden_args_hash(self):
         from starlette.testclient import TestClient
-        from torwaechter import redact
-        from torwaechter.web import create_app
+        from lookfirst import redact
+        from lookfirst.web import create_app
         h = GateHarness(web_enabled=True); self.addCleanup(h.close)
         c = TestClient(create_app(h.registry, h.confirmer, redact.identity, "127.0.0.1", 8477), base_url="http://127.0.0.1:8477", follow_redirects=False)
         sha = "a" * 64
@@ -394,8 +394,8 @@ class FreigabeBindungTest(unittest.TestCase):
     def test_geaenderte_argumente_brauchen_neue_freigabe(self):
         """Dieselbe Aktion mit anderen Argumenten: frühere Freigabe (Token + Hash) öffnet sie nicht; nur eine neue Entscheidung."""
         from starlette.testclient import TestClient
-        from torwaechter import redact
-        from torwaechter.web import create_app
+        from lookfirst import redact
+        from lookfirst.web import create_app
         posted = []
         h = self.webhook_harness(posted); self.addCleanup(h.close)
         h.confirmer.timeout = 3
@@ -433,7 +433,7 @@ class FreigabeBindungTest(unittest.TestCase):
 
     def test_redaction_hook_kann_bindung_nicht_aendern(self):
         """Der Redaction-Hook darf die Anzeige maskieren, aber nicht Aufruf-ID oder Hash der auszuführenden Argumente."""
-        from torwaechter import preview as pv
+        from lookfirst import preview as pv
         posted = []
         h = self.webhook_harness(posted); self.addCleanup(h.close)
         h.confirmer.timeout = 3
@@ -456,7 +456,7 @@ class FreigabeBindungTest(unittest.TestCase):
     def webseite_freigabe_mit_hook(self, hook):
         """Ende-zu-Ende über die echte Freigabeseite: Seite laden, Felder unverändert aus dem HTML übernehmen, klicken."""
         from starlette.testclient import TestClient
-        from torwaechter.web import create_app
+        from lookfirst.web import create_app
         h = GateHarness(web_enabled=True); self.addCleanup(h.close)
         h.confirmer.timeout = 3
         c = TestClient(create_app(h.registry, h.confirmer, hook, "127.0.0.1", 8477), base_url="http://127.0.0.1:8477", follow_redirects=False)
@@ -484,7 +484,7 @@ class FreigabeBindungTest(unittest.TestCase):
     def test_webseite_freigabe_trotz_hook_der_hash_in_kopie_aendert(self):
         """Review #683 (MITTEL): Seite und /open wenden den Hook erneut an; die Bindung muss trotzdem die der Registry bleiben,
         sonst endet ein gültiger Klick mit 403."""
-        from torwaechter import preview as pv
+        from lookfirst import preview as pv
 
         def hook(preview):
             return {**preview, "arguments": {"an": "[redacted]"}, "args_sha256": "f" * 64, "id": "tw-fremd"}
@@ -497,7 +497,7 @@ class FreigabeBindungTest(unittest.TestCase):
 
     def test_webseite_freigabe_trotz_hook_der_vorschau_in_place_aendert(self):
         """Review #683: ein Hook, der das Vorschau-Dict selbst verändert, verschiebt weder Gate- noch Registry-Bindung noch Protokoll."""
-        from torwaechter import preview as pv
+        from lookfirst import preview as pv
 
         def hook(preview):
             preview["arguments"] = {"an": "[redacted]"}
@@ -566,10 +566,10 @@ class AuditTest(unittest.TestCase):
         self.assertFalse(audit.verify(self.path, other)[0])
 
     def test_cli_verify_log(self):
-        from torwaechter.cli import main
+        from lookfirst.cli import main
         out = io.StringIO()
         with __import__("contextlib").redirect_stdout(out):
-            self.assertEqual(main(["verify-log", "--config", str(self.h.dir / "torwaechter.yaml")]), 0)
+            self.assertEqual(main(["verify-log", "--config", str(self.h.dir / "lookfirst.yaml")]), 0)
         self.assertIn("OK: 4 entries", out.getvalue())
 
 

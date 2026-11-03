@@ -1,4 +1,4 @@
-"""Torwächter pilot-status and launch gate evaluation.
+"""lookfirst pilot-status and launch gate evaluation.
 
 Measures the criteria for completing the local pilot phase (#609/#807):
 - Launch gate criteria: >= 1 week (7 days) and >= 20 real operations without tampering
@@ -93,7 +93,7 @@ class PilotStatusReport:
         ch_str = f"[web: {ch.get('web', 0)}, webhook: {ch.get('webhook', 0)}, elicitation: {ch.get('elicitation', 0)}]"
         
         lines = [
-            f"[torwaechter pilot-status] Gate-Ampel: {symbol} {self.gate_status}",
+            f"[lookfirst pilot-status] Gate-Ampel: {symbol} {self.gate_status}",
             f"  - Echte Vorgänge: {self.real_operations_total} / {self.gate_operations_target} Ziel (Freigaben: {self.approvals_total}, Ablehnungen: {self.denials_total}) {ch_str}",
             f"  - Timeouts:       {self.timeouts_total} (Liegenlassen zählt nicht als echter Vorgang)",
             f"  - Laufzeit:       {days_str} / {self.gate_days_target:.0f} Tage Ziel{first_str}",
@@ -123,7 +123,7 @@ def evaluate_pilot_status(conf: cfg.Config, now: float | None = None) -> PilotSt
 
     if not log_path.exists():
         return PilotStatusReport(
-            config_path=str(conf.audit_key.parent / "torwaechter.yaml"),
+            config_path=str(conf.audit_key.parent / "lookfirst.yaml"),
             audit_log_path=str(log_path),
             audit_exists=False,
             audit_verified=False,
@@ -142,7 +142,7 @@ def evaluate_pilot_status(conf: cfg.Config, now: float | None = None) -> PilotSt
 
     if not key_pub_path.exists():
         return PilotStatusReport(
-            config_path=str(conf.audit_key.parent / "torwaechter.yaml"),
+            config_path=str(conf.audit_key.parent / "lookfirst.yaml"),
             audit_log_path=str(log_path),
             audit_exists=True,
             audit_verified=False,
@@ -270,7 +270,7 @@ def evaluate_pilot_status(conf: cfg.Config, now: float | None = None) -> PilotSt
     gate_status = "ERFUELLT" if gate_met else "OFFEN"
 
     return PilotStatusReport(
-        config_path=str(conf.audit_key.parent / "torwaechter.yaml"),
+        config_path=str(conf.audit_key.parent / "lookfirst.yaml"),
         audit_log_path=str(log_path),
         audit_exists=True,
         audit_verified=ok,

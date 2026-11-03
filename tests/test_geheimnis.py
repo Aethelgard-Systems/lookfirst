@@ -3,7 +3,7 @@ nur als Platzhalter. Alle Werte synthetisch (keine echten Schlüssel)."""
 import re
 import unittest
 
-from torwaechter.schleuse import PLACEHOLDER, Schleuse
+from lookfirst.schleuse import PLACEHOLDER, Schleuse
 
 FAKE = {
     "github": "ghp_" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8",

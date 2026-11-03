@@ -1,6 +1,6 @@
-# Compliance-Mapping: Was agent-gate (Torwächter) technisch zu EU AI Act Art. 12/14, DORA und MaRisk beiträgt
+# Compliance-Mapping: Was agent-gate (lookfirst) technisch zu EU AI Act Art. 12/14, DORA und MaRisk beiträgt
 
-> **Keine Rechtsberatung, keine Zertifizierung.** Dieses Dokument ordnet Funktionen von agent-gate (Arbeitsname „Torwächter“) den
+> **Keine Rechtsberatung, keine Zertifizierung.** Dieses Dokument ordnet Funktionen von agent-gate (Arbeitsname „lookfirst“) den
 > Anforderungen aus Rechtstexten zu, damit ein Betreiber oder Prüfer schnell sieht, *welchen Nachweis das Werkzeug liefern kann* und
 > *was es nicht leistet*. Ob eine Pflicht im Einzelfall gilt (z. B. ob ein KI-System „hochriskant“ nach Anhang III ist, ob ein
 > Unternehmen unter DORA oder die MaRisk fällt), entscheiden Jurist:innen und die zuständige Aufsicht – nicht dieses Dokument und nicht
@@ -10,7 +10,7 @@
 > Stand 17.10.2026, Verfasser FABLE. Quellen: EU-Kommission AI-Act-Service-Desk (konsolidierte Fassung EUR-Lex 02024R1689-20260727 vom
 > 27.07.2026, inkl. Änderungen durch den „Digital Omnibus on AI“, ABl. L 2026/1744), Springlex-Wiedergabe von DORA (ABl. L 333 vom
 > 27.12.2022), BaFin/Bundesbank Rundschreiben 06/2026 (BA) MaRisk vom 30.06.2026. Evidenzklasse `EXTERNAL`, Abrufdatum 17.10.2026.
-> Grundlage war die Recherche `torwaechter-recherche-2026-10_argon_v1.1` (ARGON); ihre Aussagen wurden hier gegen die Primärquellen
+> Grundlage war die Recherche `lookfirst-recherche-2026-10_argon_v1.1` (ARGON); ihre Aussagen wurden hier gegen die Primärquellen
 > nachgeprüft, Abweichungen stehen in Abschnitt 5.
 
 ## 1. Was agent-gate ist (in einem Absatz)
@@ -18,7 +18,7 @@
 Ein MCP-Proxy zwischen KI-Agent und Werkzeug. Jeder schreibende Werkzeugaufruf wird **angehalten**, als Vorschau gezeigt, von einem
 Menschen **freigegeben oder abgelehnt** (Elicitation im Client, lokale Freigabeseite oder Webhook), erst dann ausgeführt, danach
 **zurückgelesen** (Ist-Zustand vs. Erwartung) und in ein **append-only, hash-verkettetes, Ed25519-signiertes Protokoll** geschrieben
-(`torwaechter verify-log` erkennt veränderte, entfernte, umsortierte, eingefügte oder gefälschte Einträge, Abschneiden am Ende über die
+(`lookfirst verify-log` erkennt veränderte, entfernte, umsortierte, eingefügte oder gefälschte Einträge, Abschneiden am Ende über die
 signierte `.head`-Datei). Lesende Werkzeuge laufen durch; was nicht als lesend bekannt ist, wird gefragt. Details: `README.md`,
 `docs/architecture.md`; Protokollformat identisch mit `evidence-v1` von agent-postbox.
 

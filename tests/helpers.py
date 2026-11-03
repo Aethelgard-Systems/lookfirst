@@ -12,10 +12,10 @@ from mcp.client.session import ClientSession
 from mcp.server.lowlevel import Server
 from mcp.shared.memory import create_client_server_memory_streams
 
-from torwaechter import audit, config as cfg, redact
-from torwaechter.confirm import Confirmer, PendingRegistry
-from torwaechter.proxy import Gate
-from torwaechter.upstream import Upstreams
+from lookfirst import audit, config as cfg, redact
+from lookfirst.confirm import Confirmer, PendingRegistry
+from lookfirst.proxy import Gate
+from lookfirst.upstream import Upstreams
 
 
 def bank_server(state: dict, lie: bool = False) -> Server:
@@ -52,8 +52,8 @@ DEFAULT_RULES = {
 def write_config(d: Path, rules=None, upstreams=None, confirm=None) -> cfg.Config:
     data = {"upstreams": upstreams or {"bank": {"command": "true"}}, "rules": rules or DEFAULT_RULES,
             "confirm": confirm or {"timeout_seconds": 0.5, "elicitation": True}, "audit": {"log": "audit.jsonl", "key": "key.pem"}}
-    (d / "torwaechter.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
-    return cfg.load(d / "torwaechter.yaml")
+    (d / "lookfirst.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
+    return cfg.load(d / "lookfirst.yaml")
 
 
 @asynccontextmanager

@@ -1,8 +1,8 @@
-# Torwächter – starter configuration (copy next to your audit log; see docs/clients.md). Paths are relative to this file.
-name: torwaechter
+# lookfirst – starter configuration (copy next to your audit log; see docs/clients.md). Paths are relative to this file.
+name: lookfirst
 upstreams:
   # one or more MCP servers; with more than one, tools are named <upstream>__<tool>
-  bank: {command: "python3", args: ["bank_server.py"]}          # stdio server started by Torwächter
+  bank: {command: "python3", args: ["bank_server.py"]}          # stdio server started by lookfirst
   # crm: {url: "http://127.0.0.1:9000/mcp"}                        # Streamable HTTP server already running
 rules:
   default: {read_only: allow, destructive: confirm, unknown: confirm}
@@ -21,5 +21,5 @@ confirm:
   web: {host: 127.0.0.1, port: 8477}            # add identity_header: X-Forwarded-User when behind an authenticating proxy
   # webhook: {url: "https://example.invalid/braucht-dich", token_file: "webhook.secret"}   # https only
 audit:
-  log: "./torwaechter-audit.jsonl"
-  key: "./torwaechter-ed25519.key"
+  log: "./lookfirst-audit.jsonl"
+  key: "./lookfirst-ed25519.key"
