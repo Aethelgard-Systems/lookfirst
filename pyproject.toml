@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "torwaechter"
+version = "0.2.0"
+description = "Gatekeeper between AI agents and tools: preview → human confirmation → execution → read-back → tamper-evident audit log (MCP proxy)."
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "Apache-2.0"}
+dependencies = [
+    "mcp>=2.2,<3",
+    "pyyaml>=6",
+    "cryptography>=42",
+    "starlette>=0.48",
+    "uvicorn>=0.31",
+]
+
+[project.scripts]
+torwaechter = "torwaechter.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["torwaechter*"]
