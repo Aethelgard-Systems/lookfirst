@@ -24,7 +24,8 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 from starlette.routing import Route
 
-from .confirm import Confirmer, PendingRegistry, clean_actor
+from .confirm import Confirmer, PendingRegistry, args_text, clean_actor, tool_shown
+from .preview import visible
 
 PAGE = """<!doctype html><meta charset="utf-8"><title>lookfirst – Freigaben</title>
 <style>body{{font-family:system-ui;max-width:44rem;margin:2rem auto;padding:0 1rem}} .c{{border:1px solid #ccc;border-radius:8px;padding:1rem;margin:1rem 0}}
@@ -80,13 +81,15 @@ def create_app(registry: PendingRegistry, confirmer: Confirmer, redact, host: st
         return clean_actor(form.get("actor", "")) if form is not None else ""
 
     def view(p) -> dict:
-        return {**redact(copy.deepcopy(p.preview)), "id": p.id, "args_sha256": p.args_sha256}
+        v = {**redact(copy.deepcopy(p.preview)), "id": p.id, "args_sha256": p.args_sha256}
+        v["tool_display"], v["arguments_display"] = tool_shown(v), args_text(v)  # what a human may safely read; raw fields stay for machines
+        return v
 
     async def index(request: Request):
         items = [view(p) for p in registry.open_items()]
         verified = actor_of(request)
         who = WHO_HEADER.format(actor=html.escape(verified)) if hdr else WHO_FIELD
-        cards = "".join(CARD.format(summary=html.escape(p["summary"]), tool=html.escape(p["tool"]), args=html.escape(json.dumps(p["arguments"], ensure_ascii=False, indent=1)),
+        cards = "".join(CARD.format(summary=html.escape(p["summary"]), tool=html.escape(tool_shown(p)), args=html.escape(visible(json.dumps(p["arguments"], ensure_ascii=False, indent=1), keep_layout=True, json_text=True)),
                                     id=html.escape(p["id"]), sha=html.escape(str(p.get("args_sha256", ""))), csrf=csrf, who=who) for p in items)
         count = f"{len(items)} open" if items else "Nothing open."
         r = HTMLResponse(PAGE.format(count=count, cards=cards) + ("" if hdr else ACTOR_SCRIPT))
