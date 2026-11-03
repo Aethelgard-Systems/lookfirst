@@ -76,6 +76,17 @@ Rücklesen (`rules.tools.<name>.readback`): nach einer bestätigten Schreibaktio
 vergleicht erwartete Felder (`$args.x`, `$result.y`). Ergebnis `ok`, `unklar` (nicht prüfbar) oder `fehlgeschlagen` (Abweichung),
 zurückgegeben in `structuredContent.lookfirst` – nie „erledigt“ ohne Beleg.
 
+
+## Bekannte Grenzen (aus der unabhängigen Gegenprüfung, 03.11.2026)
+
+Das sind dokumentierte Grenzen, keine versteckten Fehler. Zu jeder gibt es einen Test, der das heutige Verhalten festhält oder das gewünschte als erwarteten Fehlschlag markiert.
+
+| Nr. | Grenze | Was tun |
+|---|---|---|
+| B4.1 | Wird das Prüfprotokoll am Ende gekürzt **und** die `.head`-Datei gelöscht, sieht die übrige Hash-Kette weiter intakt aus. `lookfirst verify-log` endet dann mit Exit 0 und einer Warnung (`head sidecar missing`). | Die Warnung in eigenen Prüfungen wie einen Fehler behandeln; `.head` zusammen mit dem Protokoll aufbewahren. |
+| B5.1 | Der Datenschutzfilter (`schleuse`) ist ein deterministischer Mustervergleich. Eine IBAN mit Zeilenumbruch, Text mit unsichtbaren Zeichen oder ein nur Base64-kodiertes Geheimnis im Fließtext wird **nicht** erkannt. Er verringert Abfluss, er anonymisiert nicht. | Nicht für Geheimnisse verlassen; Geheimnisse gar nicht in Werkzeugargumente schreiben. |
+| B7.1 | Mit `confirm.elicitation: true` warnt `lookfirst serve` beim Start nicht vor autonomen Clients, die die Elicitation selbst beantworten könnten (Selbstfreigabe). | Für autonome Clients `confirm.elicitation: false` setzen, dann entscheiden nur die Webseite oder der Webhook. |
+
 ## Datenschutz-Schleuse (Vorschau v0.3)
 
 Private Angaben verlassen das Haus nur als Platzhalter (`schleuse:` in der Konfiguration):
