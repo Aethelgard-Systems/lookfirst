@@ -71,8 +71,15 @@ def args_text(preview: dict) -> str:
     return visible(json.dumps(preview.get("arguments") or {}, ensure_ascii=False), json_text=True)
 
 
+def total_display_len(preview: dict) -> int:
+    """Total length of the visible text shown in an elicitation prompt: tool name, summary, and escaped arguments."""
+    tool_len = len(tool_shown(preview))
+    summary_len = len(str(preview.get("summary") or ""))
+    return tool_len + summary_len + len(args_text(preview))
+
+
 def too_long_for_form(preview: dict) -> bool:
-    return args_len(preview) > MAX_ELICIT_ARGS or len(args_text(preview)) > MAX_ELICIT_DISPLAY
+    return args_len(preview) > MAX_ELICIT_ARGS or total_display_len(preview) > MAX_ELICIT_DISPLAY
 
 
 def args_len(preview: dict) -> int:
