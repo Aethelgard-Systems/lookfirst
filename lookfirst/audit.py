@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
 
 GENESIS = "0" * 64
@@ -117,7 +118,7 @@ class Verdict(tuple):
         return o
 
 
-def verify(path: Path, public_key: Ed25519PublicKey) -> "Verdict":
+def verify(path: Path, public_key: Ed25519PublicKey, trusted_head: Path | None = None) -> "Verdict":
     """→ (ok, problems, entries) [+ .warnings]. Checks hash recomputation, signature, chain order, integer ts and the signed head."""
     problems: list[Problem] = []
     warnings: list[str] = []
@@ -169,4 +170,28 @@ def verify(path: Path, public_key: Ed25519PublicKey) -> "Verdict":
             problems.append(Problem(n, "head sidecar unsigned, damaged or forged"))
         elif h["hash"] != (last_hash or GENESIS) or h["seq"] != seq:
             problems.append(Problem(n, "head mismatch (entries truncated at the end or head stale)"))
+    # An external checkpoint is a signed prefix anchor, not necessarily the latest head.
+    # It must stay outside the write access of whoever can modify the local log.
+    if trusted_head is not None:
+        try:
+            anchor = json.loads(Path(trusted_head).read_text(encoding="utf-8"))
+            if (not isinstance(anchor, dict) or set(anchor) != {"seq", "hash", "sig"}
+                    or type(anchor["seq"]) is not int or anchor["seq"] < 0
+                    or not isinstance(anchor["hash"], str) or len(anchor["hash"]) != 64
+                    or not isinstance(anchor["sig"], str)):
+                raise ValueError("checkpoint format")
+            public_key.verify(bytes.fromhex(anchor["sig"]), head_message(anchor["seq"], anchor["hash"]))
+            anchor_hash = GENESIS if anchor["seq"] == 0 else None
+            with path.open("r", encoding="utf-8") as stream:
+                for line in stream:
+                    if not line.strip():
+                        continue
+                    entry = json.loads(line)
+                    if entry.get("seq") == anchor["seq"]:
+                        anchor_hash = entry.get("hash")
+                        break
+            if anchor_hash != anchor["hash"]:
+                problems.append(Problem(n, "trusted head mismatch (checkpoint missing or history replaced)"))
+        except (OSError, ValueError, TypeError, KeyError, AttributeError, InvalidSignature):
+            problems.append(Problem(n, "trusted head missing, damaged or forged"))
     return Verdict(not problems, problems, n, warnings)

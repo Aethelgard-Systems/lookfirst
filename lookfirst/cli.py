@@ -71,6 +71,7 @@ def main(argv=None):
     s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8470)
     k = sub.add_parser("keygen"); k.add_argument("--config", required=True)
     v = sub.add_parser("verify-log"); v.add_argument("--config", required=True)
+    v.add_argument("--trusted-head", type=Path, help="external signed .head checkpoint; missing or invalid checkpoint fails verification")
     c = sub.add_parser("check", help="check configuration, audit key, token file and upstreams without starting the gate")
     c.add_argument("--config", required=True); c.add_argument("--timeout", type=float, default=10.0, help="seconds per upstream (default 10)")
     ps = sub.add_parser("pilot-status", help="evaluate launch gate criteria from audit log")
@@ -87,7 +88,7 @@ def main(argv=None):
         return 0
     if a.cmd == "verify-log":
         conf = cfg.load(a.config)
-        verdict = audit.verify(conf.audit_log, audit.load_public(Path(str(conf.audit_key) + ".pub")))
+        verdict = audit.verify(conf.audit_log, audit.load_public(Path(str(conf.audit_key) + ".pub")), trusted_head=a.trusted_head)
         ok, problems, n = verdict
         print(f"{'OK' if ok else 'TAMPERED'}: {n} entries, {len(problems)} problem(s)" + (f", {len(verdict.warnings)} warning(s)" if verdict.warnings else ""))
         for pr in problems:
