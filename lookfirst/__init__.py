@@ -4,4 +4,4 @@ Every *writing* tool call passes: preview → human confirmation → execution �
 Reading calls pass through unchanged. Implemented as an MCP proxy (stdio or Streamable HTTP) in front of one or more
 upstream MCP servers. Standalone: no imports from any other project.
 """
-__version__ = "0.1.0"
+__version__ = "0.2.1"

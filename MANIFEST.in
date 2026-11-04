@@ -1,0 +1,2 @@
+include tools/build_dist.py
+include docs/pypi-preparation.md
