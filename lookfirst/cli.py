@@ -12,7 +12,7 @@ from pathlib import Path
 
 import anyio
 
-from . import audit, config as cfg, httpauth, redact
+from . import __version__, audit, config as cfg, httpauth, redact
 from .confirm import Confirmer, PendingRegistry
 
 
@@ -30,6 +30,9 @@ def _gate(conf: cfg.Config):
 
 async def serve(conf: cfg.Config, transport: str, host: str, port: int):
     import uvicorn
+    if conf.elicitation:
+        print("[lookfirst] WARNING: autonomous clients can self-approve elicitation; "
+              "set confirm.elicitation: false and isolate the human approval channel", file=sys.stderr)
     token = None
     if transport == "http":  # #668 P2: check before any upstream starts
         try:
@@ -66,6 +69,7 @@ async def serve(conf: cfg.Config, transport: str, host: str, port: int):
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="lookfirst", description="Gatekeeper between AI agents and tools (MCP proxy).")
+    p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("serve"); s.add_argument("--config", required=True); s.add_argument("--transport", choices=("stdio", "http"), default="stdio")
     s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8470)
