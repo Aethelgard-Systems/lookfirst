@@ -1,7 +1,7 @@
 # 🛡️ lookfirst (bisher „Torwächter“)
 
 **Eine Schutzschicht zwischen KI-Agenten und ihren Werkzeugen.** Jede *schreibende* Aktion (Geld überweisen, Datensatz löschen,
-Mail senden, Ticket schließen) läuft durch: **Vorschau → ein Mensch bestätigt → Ausführung → Rücklesen → fälschungssicheres
+Mail senden, Ticket schließen) läuft durch: **Vorschau → ein Mensch bestätigt → Ausführung → Rücklesen → manipulationserkennendes
 Prüfprotokoll.** Lesende Aktionen laufen unverändert durch.
 
 lookfirst ist ein [MCP](https://modelcontextprotocol.io)-Proxy: zwischen beliebigem MCP-Client (Claude, ChatGPT, Cursor, eigener
