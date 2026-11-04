@@ -514,7 +514,6 @@ class TestBereich5MaskierungDatenschutzSchleuse(unittest.TestCase):
         self.assertNotIn(b64_iban, out_iban)
         self.assertRegex(out_iban, r"\[\[IBAN_")
 
-    @unittest.expectedFailure
     def test_json_key_variation_password_vs_custom_key(self):
         """SOLL: Auch Keys wie 'db_password' und 'access_token' muessen als Geheimnis maskiert werden (Befund B5.2: SECRET_KEY_NAME unvollstaendig)."""
         data = {
