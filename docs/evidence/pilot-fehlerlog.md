@@ -20,8 +20,8 @@ Evidenz: DIRECT_EVIDENCE aus Code und synthetischen Prüfungen.
 
 | Datum | Was passierte? | Was lookfirst tat | Folge | Fix/PR |
 |---|---|---|---|---|
-| 26.10.2026 (Reviewbeleg) | Die Titel-Deduplizierung hatte keine zeitliche Grenze (M1). | Eine spätere gleichnamige Aufgabe hätte die alte Erfolgsmeldung erhalten. | Berechtigte neue Aufgaben konnten unterdrückt werden; kein Livevorfall belegt. | [#610, Fix 39a8ac1](https://github.com/marcogernand-hub/aethelgard-core/pull/610/commits/39a8ac1): auf 600 Sekunden begrenzt, Wiederholung ausdrücklich gekennzeichnet. |
-| 27.10.2026 (Reviewbeleg) | Der Adapter verwendete einen falschen API-Vertrag. | Die Implementierung zielte auf Version 1 mit PUT statt auf den bestehenden Version-2-Vertrag mit POST. | Echte Anlage war damit nicht nachgewiesen; kein Live-Schreibversuch durch WORK. | [#610, Fix 0060f7d](https://github.com/marcogernand-hub/aethelgard-core/pull/610/commits/0060f7d): an vorhandenen Vertrag angepasst; sieben synthetische Prüfungen bestanden. |
+| 26.10.2026 (Reviewbeleg) | Die Titel-Deduplizierung hatte keine zeitliche Grenze (M1). | Eine spätere gleichnamige Aufgabe hätte die alte Erfolgsmeldung erhalten. | Berechtigte neue Aufgaben konnten unterdrückt werden; kein Livevorfall belegt. | #610, Fix 39a8ac1 (internes Repo): auf 600 Sekunden begrenzt, Wiederholung ausdrücklich gekennzeichnet. |
+| 27.10.2026 (Reviewbeleg) | Der Adapter verwendete einen falschen API-Vertrag. | Die Implementierung zielte auf Version 1 mit PUT statt auf den bestehenden Version-2-Vertrag mit POST. | Echte Anlage war damit nicht nachgewiesen; kein Live-Schreibversuch durch WORK. | #610, Fix 0060f7d (internes Repo): an vorhandenen Vertrag angepasst; sieben synthetische Prüfungen bestanden. |
 
 ## Abschluss
 
