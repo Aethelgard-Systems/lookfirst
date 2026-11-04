@@ -30,6 +30,9 @@ def _gate(conf: cfg.Config):
 
 async def serve(conf: cfg.Config, transport: str, host: str, port: int):
     import uvicorn
+    if conf.elicitation:
+        print("[lookfirst] WARNING: autonomous clients can self-approve elicitation; "
+              "set confirm.elicitation: false and isolate the human approval channel", file=sys.stderr)
     token = None
     if transport == "http":  # #668 P2: check before any upstream starts
         try:

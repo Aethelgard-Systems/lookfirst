@@ -726,7 +726,6 @@ class TestBereich7AutonomerClientDokumentation(unittest.TestCase):
             )
             self.assertNotIn("Traceback (most recent call last)", stderr, f"Server crashte beim Start: {stderr}")
 
-    @unittest.expectedFailure
     def test_autonomous_client_start_warning_behavior(self):
         """SOLL: Wenn lookfirst gestartet wird und nur Elicitation aktiv ist, soll auf stderr vor autonomen Clients gewarnt werden (Befund B7.1)."""
         with tempfile.TemporaryDirectory() as td:
