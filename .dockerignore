@@ -1,0 +1,12 @@
+# Whitelist the build inputs; private configs, keys, logs and .git never enter
+# the Docker build context. Mount operational files at runtime instead.
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!README.md
+!LICENSE
+!lookfirst/
+!lookfirst/**
+**/__pycache__
+**/*.pyc
