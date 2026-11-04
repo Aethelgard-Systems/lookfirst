@@ -19,9 +19,9 @@ KI-Client ──MCP──▶ lookfirst ──MCP──▶ Upstream-Server (Bank,
 *English version: [README.md](README.md). Architektur: [docs/architecture.md](docs/architecture.md).*
 
 ## Stand
-0.2.0, Stand 31. Oktober 2026. Vorbereitung Launch-Vorstellung Anfang November 2026. Läuft offline Ende-zu-Ende (Demo unten); vorbereitet für den lokalen Piloten (#609/#610, #807, #846). **KEIN PRODUKTIONSRELEASE:** echter Produktiveinsatz unterliegt gezielten Tests und Freigabe durch MARCO (die frühere Mindestwartephase von ≥ 1 Woche / ≥ 20 Vorgängen ist seit MARCO 31.10. „Kurzer Lieferweg“ keine Pflichtschwelle mehr; Messung des Reifegrads weiterhin über `lookfirst pilot-status`). **Lizenz:** Apache-2.0 (Entscheidung MARCO 27.10.2026; siehe `LICENSE`). Die Lizenz räumt Nutzungsrechte am Code ein; sie bedeutet weder, dass der Build freigegeben, noch dass der Produktname geklärt ist.
+0.2.0 (vor 1.0). Läuft offline Ende-zu-Ende (Demo unten); getestet mit Claude Code, Gemini CLI und Antigravity (siehe `docs/clients.md`). **Kein Produktionsrelease:** Für echten Produktiveinsatz brauchst du eigene gezielte Tests und Freigabe. Langzeiterfahrung aus dem Einsatz gibt es noch nicht. **Lizenz:** Apache-2.0 (siehe `LICENSE`). Die Lizenz räumt Nutzungsrechte am Code ein; sie sagt nichts über Eignung oder Sicherheit. Bekannte Grenzen stehen weiter unten.
 
-Messung des Gate-Reifegrads jederzeit über: `lookfirst pilot-status --config lookfirst.yaml`.
+Den Gate-Reifegrad kannst du jederzeit messen: `lookfirst pilot-status --config lookfirst.yaml`.
 
 ## Schnellstart (60 Sekunden, offline)
 

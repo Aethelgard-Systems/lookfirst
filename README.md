@@ -19,9 +19,9 @@ AI client ──MCP──▶ lookfirst ──MCP──▶ upstream servers (bank
 *Deutsche Fassung: [README.de.md](README.de.md). Architecture: [docs/architecture.md](docs/architecture.md).*
 
 ## Status
-0.2.0, as of October 31, 2026. Preparation for launch presentation early November 2026. Works end-to-end offline (demo below); prepared for local pilot (#609/#610, #807, #846). **NOT A PRODUCTION RELEASE:** subject to verification and authorization by MARCO (the former threshold of ≥ 1 week / ≥ 20 operations is no longer a mandatory gate since MARCO 31.10. "Kurzer Lieferweg"; readiness can still be tracked via `lookfirst pilot-status`). **License:** Apache-2.0 (MARCO decision 27.10.2026; see `LICENSE`). The license grants rights to use the code; it does not mean the build is released or the product name cleared.
+0.2.0 (pre-1.0). Works end-to-end offline (demo below); tested with Claude Code, Gemini CLI and Antigravity (see `docs/clients.md`). **Not a production release:** real production use needs your own targeted tests and sign-off. There is no long-term field experience yet. **License:** Apache-2.0 (see `LICENSE`). The license grants rights to use the code; it makes no promise of fitness or security. Known limits are listed below.
 
-Measure gate readiness at any time: `lookfirst pilot-status --config lookfirst.yaml`.
+Gate readiness can be measured at any time: `lookfirst pilot-status --config lookfirst.yaml`.
 
 ## Quick start (60 seconds, offline)
 
@@ -175,11 +175,11 @@ does not prove an actual human answered; disable it for clients that auto-answer
 A timed-out upstream can still complete remotely; inspect that possibility before
 unlocking. No read-back of an uncertain write is automatically retried.
 
-Pilot #610 already has adapter-local title deduplication (ten minutes) and an
+A local pilot adapter already has adapter-local title deduplication (ten minutes) and an
 in-memory write latch for its one creation endpoint. P4 does not copy that
 business rule or clear its latch. It adds the missing generic timeout and signed,
 recoverable per-tool interlock at the gate. Unlocking the gate alone does **not**
-unlock a blocked pilot adapter; its operator procedure remains necessary.
+unlock a blocked adapter; its operator procedure remains necessary.
 
 ## Update, rollback, errors
 
