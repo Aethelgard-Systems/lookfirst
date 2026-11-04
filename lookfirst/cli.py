@@ -12,7 +12,7 @@ from pathlib import Path
 
 import anyio
 
-from . import audit, config as cfg, httpauth, redact
+from . import __version__, audit, config as cfg, httpauth, redact
 from .confirm import Confirmer, PendingRegistry
 
 
@@ -69,6 +69,7 @@ async def serve(conf: cfg.Config, transport: str, host: str, port: int):
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="lookfirst", description="Gatekeeper between AI agents and tools (MCP proxy).")
+    p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("serve"); s.add_argument("--config", required=True); s.add_argument("--transport", choices=("stdio", "http"), default="stdio")
     s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8470)
