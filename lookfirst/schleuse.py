@@ -47,13 +47,13 @@ SECRET_SHAPES = [
 # Benannter Wert: nur der Wert wird ersetzt, der Schlüsselname bleibt lesbar („password=[[GEHEIMNIS_…]]“).
 SECRET_KEYED = (r"(?i:(?:\b[a-z][a-z0-9+.-]*://[^\s:/@]+:(?P<url>(?:(?!\[\[[A-Z][A-Z0-9_]{1,23}_[0-9a-f]{6,64}\]\])[^\s@/]){3,})@)"
                 r"|(?:\b(?:password|passwd|passwort|kennwort|passphrase|pwd|secret|token|api[_-]?key|access[_-]?key"
-                r"|auth[_-]?token|client[_-]?secret|private[_-]?key)[\"']?\s*[:=]\s*[\"']?(?:(?:bearer|basic|token)\s+)?"
+                r"|db[_-]?password|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key)[\"']?\s*[:=]\s*[\"']?(?:(?:bearer|basic|token)\s+)?"
                 r"(?P<val>(?:(?!\[\[[A-Z][A-Z0-9_]{1,23}_[0-9a-f]{6,64}\]\])[^\s\"',;]){8,}))"
                 r"|(?:\bAuthorization:\s*(?:Bearer|Basic|Token)\s+(?P<hdr>(?:(?!\[\[[A-Z][A-Z0-9_]{1,23}_[0-9a-f]{6,64}\]\])[^\s\"',;]){8,})))")
 # WORK-Review #661: Ein Wert endet nur vor einem vollständigen Platzhalter „[[LABEL_hex]]“ (geschützte Spanne); Klammern und
 # platzhalterähnlicher Text im Wert selbst („Abcd[[ABC]]x“) bleiben Teil des Werts.
 SECRET_KEY_NAME = re.compile(r"(?i)^[\"']?(?:password|passwd|passwort|kennwort|passphrase|pwd|secret|token|api[_-]?key|access[_-]?key"
-                             r"|auth[_-]?token|client[_-]?secret|private[_-]?key|authorization)[\"']?$")
+                             r"|db[_-]?password|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key|authorization)[\"']?$")
 SECRET = re.compile("|".join("(?:" + x + ")" for x in SECRET_SHAPES) + "|" + SECRET_KEYED)
 
 
