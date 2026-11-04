@@ -1,5 +1,7 @@
 # 🛡️ lookfirst (formerly "Torwächter")
 
+<!-- mcp-name: io.github.Aethelgard-Systems/lookfirst -->
+
 **A gatekeeper between AI agents and the tools they use.** Every *writing* action (transfer money, delete a record, send a
 mail, close a ticket) goes through: **preview → a human confirms → execution → read-back → tamper-evident audit log.**
 Reading actions pass through untouched.

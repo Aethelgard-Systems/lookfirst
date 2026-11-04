@@ -30,3 +30,21 @@ Reference: https://docs.pypi.org/trusted-publishers/creating-a-project-through-o
 7. Stop before running the publishing workflow; obtain the existing explicit publication approval for that concrete artifact and version.
 
 Do not create API tokens as a workaround. Do not confuse a registered publisher with an uploaded package. Updating the PyPI configuration or workflow permissions is a maintainer action; this document performs neither.
+
+## MCP Registry draft (not published)
+
+`server.json` is preparation for the candidate PyPI distribution, not an installable listing. The README ownership marker must match `name` exactly. Source: https://modelcontextprotocol.io/registry/package-types (checked 2026-11-04).
+
+The draft resolves to `lookfirst serve --config <absolute-path>`, using stdio by default. Supply an existing operator-managed YAML configuration; the registry does not create upstream credentials or audit keys. Run `lookfirst keygen --config <absolute-path>` only for a new configuration, then `lookfirst check --config <absolute-path>` before connecting a client. Do not overwrite existing keys.
+
+Before any later registry submission:
+
+1. Confirm the actual approved PyPI project name.
+2. Match that name in `pyproject.toml` and `server.json` package identifier.
+3. Match the approved release version in package metadata and `server.json`.
+4. Build the reviewed commit and confirm the wheel description contains the exact README ownership marker.
+5. Validate `server.json` with its referenced official schema.
+6. Exercise installation and stdio startup from the actual published package in an isolated environment.
+7. Stop here: this preparation does not submit a registry entry or publish a package.
+
+A pending PyPI publisher does not reserve the project name. See https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/ (checked 2026-11-04).
