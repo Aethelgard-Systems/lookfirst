@@ -21,15 +21,15 @@ AI client ──MCP──▶ lookfirst ──MCP──▶ upstream servers (bank
 *Deutsche Fassung: [README.de.md](README.de.md). Architecture: [docs/architecture.md](docs/architecture.md).*
 
 ## Status
-0.2.0 (pre-1.0). Works end-to-end offline (demo below); tested with Claude Code, Gemini CLI and Antigravity (see `docs/clients.md`). **Not a production release:** real production use needs your own targeted tests and sign-off. There is no long-term field experience yet. **License:** Apache-2.0 (see `LICENSE`). The license grants rights to use the code; it makes no promise of fitness or security. Known limits are listed below.
+Latest release: [v0.2.0](https://github.com/Aethelgard-Systems/lookfirst/releases/tag/v0.2.0) (pre-release, pre-1.0); `main` is 0.2.1. Not on PyPI yet – install from GitHub (below). Works end-to-end offline (demo below); tested with Claude Code, Gemini CLI and Antigravity (see `docs/clients.md`). **Not a production release:** real production use needs your own targeted tests and sign-off. There is no long-term field experience yet. **License:** Apache-2.0 (see `LICENSE`). The license grants rights to use the code; it makes no promise of fitness or security. Known limits are listed below.
 
 Gate readiness can be measured at any time: `lookfirst pilot-status --config lookfirst.yaml`.
 
 ## Quick start (60 seconds, offline)
 
 ```bash
-pip install -e .            # or: uvx --from . lookfirst demo
-lookfirst demo
+pipx install git+https://github.com/Aethelgard-Systems/lookfirst   # or: pip install git+https://…
+lookfirst demo                                                     # or, without installing: uvx --from git+https://github.com/Aethelgard-Systems/lookfirst lookfirst demo
 ```
 
 The demo starts a fake bank MCP server, puts lookfirst in front of it and plays an agent: a balance check passes through,
@@ -38,14 +38,14 @@ catches it. See [demo/VIDEO.md](demo/VIDEO.md) for the screen-recording script.
 
 ## Use it with a real client (5 minutes)
 
-1. Install once: `pipx install <path-or-git-url>` (or `pip install`). Gives you the `lookfirst` command. Windows: pure Python, `py -m pip install <path-or-git-url>` should work, but we have **not tested it on Windows yet**.
+1. Install once: `pipx install git+https://github.com/Aethelgard-Systems/lookfirst` (or `pip install …`). Gives you the `lookfirst` command. Windows: pure Python, `py -m pip install git+https://github.com/Aethelgard-Systems/lookfirst` should work, but we have **not tested it on Windows yet** – [help wanted](https://github.com/Aethelgard-Systems/lookfirst/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
 2. Copy [examples/lookfirst.yaml](examples/lookfirst.yaml) next to where the log should live; set upstreams, rules, confirmation channels.
 3. `lookfirst keygen --config lookfirst.yaml` – creates the Ed25519 signing key (0600) once.
 4. Connect a client – ready-made snippets for **Claude Desktop**, **Claude Code** and **Antigravity** in [docs/clients.md](docs/clients.md)
    (stdio: the client starts `lookfirst serve --config …`; HTTP: run `lookfirst serve --transport http --port 8470` yourself).
 5. Any time: `lookfirst verify-log --config lookfirst.yaml`.
 
-**Who approved (v1.1):** every decision is logged as `channel:actor` – `web:<user>` from an authenticating reverse-proxy header
+**Who approved:** every decision is logged as `channel:actor` – `web:<user>` from an authenticating reverse-proxy header
 (`confirm.web.identity_header`) or a self-declared name on the page, `webhook:<actor>` from the decision body, `elicitation:<client>`
 from the MCP client's name. Details and trust levels: [docs/clients.md](docs/clients.md#who-approved-v11).
 
@@ -65,7 +65,7 @@ call is denied); **(2)** the local
 web page (`confirm.web`); **(3)** a webhook (`confirm.webhook`) that receives the preview and answers on
 `POST /decision/<id>` with a **per-call token** (HMAC of the call id – a leaked token opens nothing else; webhook URLs must be
 `https://`) and the `args_sha256` from the preview – missing or different → 403, so a decision applies only to the exact
-arguments shown; the web page binds its buttons the same way). **A webhook receiver must show `tool_display`, `summary` and `arguments_display` to the human – never the raw `tool` or `arguments`:** the display fields are escaped (invisible, bidi and look-alike-space characters appear as `\uXXXX`), the raw fields are not, and a receiver that shows them can be fooled – this is where a system like AETHELGARD's "Braucht dich" plugs in. Every channel shares one timeout; **a timeout
+arguments shown; the web page binds its buttons the same way). **A webhook receiver must show `tool_display`, `summary` and `arguments_display` to the human – never the raw `tool` or `arguments`:** the display fields are escaped (invisible, bidi and look-alike-space characters appear as `\uXXXX`), the raw fields are not, and a receiver that shows them can be fooled. Every channel shares one timeout; **a timeout
 is a denial**.
 
 Limits to know: **(a)** elicitation is answered by the *client*. An autonomous client that auto-answers elicitation would approve
@@ -90,7 +90,7 @@ These are documented limits, not bugs we hide. The ids come from the counter-che
 | Id | Limit | What to do |
 |---|---|---|
 | B4.1 | If the audit log is truncated at the end **and** the `.head` sidecar file is deleted, the remaining hash chain still looks intact. `lookfirst verify-log` then ends with exit 0 and a warning (`head sidecar missing`). | Use `lookfirst verify-log --config lookfirst.yaml --trusted-head /protected/audit.head` to check an external signed checkpoint. A missing, forged, or absent checkpoint in the log fails with exit 2. A valid older checkpoint permits new entries, but cannot detect truncation after that checkpoint. Refresh your external copy regularly. Keep it **outside the write access of whoever can truncate the log** — a `.head` beside the log can be deleted together with it. |
-| B5.1 | The privacy filter (`schleuse`) is a deterministic pattern filter. An IBAN split by a line break, text with zero-width characters, or a secret that is only Base64-encoded in free text is **not** recognised. It reduces leakage, it does not anonymise. | Do not rely on it for secrets; keep secrets out of tool arguments. Also not recognised today: keys such as `db_password` or `access_token` (B5.2, pinned as an expected failure). |
+| B5.1 | The privacy filter (`schleuse`) is a deterministic pattern filter. An IBAN split by a line break, text with zero-width characters, or a secret that is only Base64-encoded in free text is **not** recognised. It reduces leakage, it does not anonymise. | Do not rely on it for secrets; keep secrets out of tool arguments. |
 | B7.1 | With `confirm.elicitation: true`, `lookfirst serve` warns at start that autonomous clients can answer elicitation themselves (self-approval), even if a fallback channel is configured. The warning cannot establish that a human approved. | For autonomous clients set `confirm.elicitation: false`, so only the web page or the webhook can approve — **and** keep the agent away from that page on the network level (other machine, container or network namespace, or a firewall rule per user). A separate OS user is not enough: every local user reaches loopback. Use `identity_header` only if the backend is reachable solely by the auth proxy; it takes the header unchecked, so an agent that reaches the backend directly can set it and approve itself. |
 
 ## Privacy lock („Schleuse“, v0.3 preview)
@@ -126,7 +126,7 @@ SHA-256, not in clear text; the human-readable summary is logged (keep secrets o
 Default: unchanged. Built-in placeholders for IBANs, cards, e-mails, phone numbers, credentials and your name list come from
 the Schleuse (see "Privacy lock" above); the hook is only for your own extra rules on top. It gets a copy and may mask anything
 shown, but never the binding: call id and `args_sha256` always come from the gate and the pending registry, also on the approval
-page and `/open` (#668 P3).
+page and `/open`.
 
 ## Compliance
 
@@ -141,7 +141,7 @@ countersigned). lookfirst secures **actions at tools** (what an agent is allowed
 Same family of trust tools, same evidence mindset; different seam. They compose: a hand-off can arrive via agent-postbox and the
 resulting action still passes the gate.
 
-## Execution interlock (#668 P4)
+## Execution interlock
 
 `execution: {timeout_seconds: 60}` bounds each upstream execution and read-back
 request (finite positive seconds; separate from the human confirmation timeout).
@@ -177,12 +177,6 @@ does not prove an actual human answered; disable it for clients that auto-answer
 A timed-out upstream can still complete remotely; inspect that possibility before
 unlocking. No read-back of an uncertain write is automatically retried.
 
-A local pilot adapter already has adapter-local title deduplication (ten minutes) and an
-in-memory write latch for its one creation endpoint. P4 does not copy that
-business rule or clear its latch. It adds the missing generic timeout and signed,
-recoverable per-tool interlock at the gate. Unlocking the gate alone does **not**
-unlock a blocked adapter; its operator procedure remains necessary.
-
 ## Update, rollback, errors
 
 **Check before every start or after every change:** `lookfirst check --config lookfirst.yaml [--timeout 10]` loads the
@@ -195,7 +189,7 @@ package – an update or rollback does not touch them. Copy those four files som
 
 ```bash
 pip show lookfirst                                   # note the current version / commit
-pipx install --force <path-or-git-url>   # or: pip install -U <path>
+pipx install --force git+https://github.com/Aethelgard-Systems/lookfirst   # or: pip install -U …
 lookfirst check --config lookfirst.yaml
 lookfirst verify-log --config lookfirst.yaml
 ```
@@ -203,7 +197,7 @@ lookfirst verify-log --config lookfirst.yaml
 Then restart the client (stdio: the client starts the gate) or the `serve --transport http` process.
 
 **Rollback.** Install the previous version the same way, pinned to the commit you noted:
-`pipx install --force "git+<git-url>@<previous-commit>"`, then `check` and `verify-log`
+`pipx install --force "git+https://github.com/Aethelgard-Systems/lookfirst@<previous-commit>"`, then `check` and `verify-log`
 again. Never create a new key to "fix" a problem: old entries can only be verified with the old `.pub`.
 
 **What a tool call result means** (`structuredContent.lookfirst`):
@@ -232,7 +226,7 @@ again. Never create a new key to "fix" a problem: old entries can only be verifi
 
 ## Tests
 
-`python -m unittest discover -s tests` – 95 tests, synthetic data, in-memory MCP plus one real stdio subprocess: rules,
+`python -m unittest discover -s tests` – 157 tests (3 of them expected failures that pin known limit B5.1), synthetic data, in-memory MCP plus one real stdio subprocess: rules,
 parameter binding (`args_sha256`), approve/deny/timeout, web + webhook channel, read-back ok/unklar/fehlgeschlagen, log tampering
 (modified, removed, reordered, inserted lines, forged signature, truncated, foreign key), read calls pass through unchanged, multiple upstreams,
 HTTP bearer token, Schleuse (masking, placeholders, session binding, credentials), `lookfirst check`, `lookfirst pilot-status`,
