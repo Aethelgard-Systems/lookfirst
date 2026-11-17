@@ -19,15 +19,15 @@ KI-Client ──MCP──▶ lookfirst ──MCP──▶ Upstream-Server (Bank,
 *English version: [README.md](README.md). Architektur: [docs/architecture.md](docs/architecture.md).*
 
 ## Stand
-0.2.0 (vor 1.0). Läuft offline Ende-zu-Ende (Demo unten); getestet mit Claude Code, Gemini CLI und Antigravity (siehe `docs/clients.md`). **Kein Produktionsrelease:** Für echten Produktiveinsatz brauchst du eigene gezielte Tests und Freigabe. Langzeiterfahrung aus dem Einsatz gibt es noch nicht. **Lizenz:** Apache-2.0 (siehe `LICENSE`). Die Lizenz räumt Nutzungsrechte am Code ein; sie sagt nichts über Eignung oder Sicherheit. Bekannte Grenzen stehen weiter unten.
+Letztes Release: [v0.2.0](https://github.com/Aethelgard-Systems/lookfirst/releases/tag/v0.2.0) (Vorabversion, vor 1.0); `main` ist 0.2.1. Noch nicht auf PyPI – Installation direkt von GitHub (unten). Läuft offline Ende-zu-Ende (Demo unten); getestet mit Claude Code, Gemini CLI und Antigravity (siehe `docs/clients.md`). **Kein Produktionsrelease:** Für echten Produktiveinsatz brauchst du eigene gezielte Tests und Freigabe. Langzeiterfahrung aus dem Einsatz gibt es noch nicht. **Lizenz:** Apache-2.0 (siehe `LICENSE`). Die Lizenz räumt Nutzungsrechte am Code ein; sie sagt nichts über Eignung oder Sicherheit. Bekannte Grenzen stehen weiter unten.
 
 Den Gate-Reifegrad kannst du jederzeit messen: `lookfirst pilot-status --config lookfirst.yaml`.
 
 ## Schnellstart (60 Sekunden, offline)
 
 ```bash
-pip install -e .            # oder: uvx --from . lookfirst demo
-lookfirst demo
+pipx install git+https://github.com/Aethelgard-Systems/lookfirst   # oder: pip install git+https://…
+lookfirst demo                                                     # oder ohne Installation: uvx --from git+https://github.com/Aethelgard-Systems/lookfirst lookfirst demo
 ```
 
 Die Demo startet eine Fake-Bank als MCP-Server, stellt lookfirst davor und spielt einen Agenten: Kontostand läuft durch,
@@ -36,7 +36,7 @@ eine Überweisung stoppt für dein `y/N`, das Ergebnis wird rückgelesen, dann w
 
 ## Mit echtem Client
 
-Windows: reines Python, `py -m pip install <pfad-oder-git-url>` sollte funktionieren, ist von uns aber **noch nicht auf Windows getestet**.
+Windows: reines Python, `py -m pip install git+https://github.com/Aethelgard-Systems/lookfirst` sollte funktionieren, ist von uns aber **noch nicht auf Windows getestet**.
 
 1. `lookfirst.yaml` schreiben (Vorlage: [lookfirst/demo_files/lookfirst.yaml](lookfirst/demo_files/lookfirst.yaml)): Upstreams, Regeln, Bestätigungskanäle, Pfade.
 2. `lookfirst keygen --config lookfirst.yaml` – einmalig den Ed25519-Schlüssel (0600) erzeugen.
@@ -61,7 +61,7 @@ ohne beide wird abgelehnt); **(2)** lokale Freigabeseite
 **Token je Aufruf** antwortet (HMAC der Aufruf-ID – ein mitgelesenes Token öffnet nichts anderes; Webhook-URLs nur `https://`)
 und den `args_sha256` aus der Vorschau mitschickt – fehlt er oder passt er nicht → 403, eine Entscheidung gilt also nur für genau
 die gezeigten Argumente; die Freigabeseite bindet ihre Knöpfe genauso. **Ein Webhook-Empfänger muss dem Menschen `tool_display`, `summary` und `arguments_display` zeigen – nie das rohe `tool` oder `arguments`:** die Anzeigefelder sind maskiert (unsichtbare, Bidi- und leerzeichenähnliche Zeichen erscheinen als `\uXXXX`), die Rohfelder nicht, ein Empfänger, der sie zeigt, lässt sich täuschen –
-hier hängt sich später AETHELGARDs „Braucht dich“ ein. Alle Kanäle teilen einen Timeout; **Timeout = Ablehnung**.
+Alle Kanäle teilen einen Timeout; **Timeout = Ablehnung**.
 
 Grenzen: **(a)** Elicitation beantwortet der *Client*. Ein autonomer Client, der Elicitation selbst beantwortet, gibt sich selbst
 frei – für solche Clients `confirm.elicitation: false` setzen, dann entscheidet nur Freigabeseite oder Webhook. **(b)** Die
@@ -86,7 +86,7 @@ Das sind dokumentierte Grenzen, keine versteckten Fehler. Die Nummern stammen au
 | Nr. | Grenze | Was tun |
 |---|---|---|
 | B4.1 | Wird das Prüfprotokoll am Ende gekürzt **und** die `.head`-Datei gelöscht, sieht die übrige Hash-Kette weiter intakt aus. `lookfirst verify-log` endet dann mit Exit 0 und einer Warnung (`head sidecar missing`). | Mit `lookfirst verify-log --config lookfirst.yaml --trusted-head /geschuetzt/audit.head` einen externen signierten Prüfpunkt prüfen. Fehlt die Kopie, ist sie gefälscht oder fehlt ihr Eintrag im Protokoll, endet die Prüfung mit Exit 2. Ein älterer gültiger Prüfpunkt erlaubt neue Einträge; Kürzungen nach diesem Prüfpunkt bleiben unerkannt. Die externe Kopie regelmäßig nachziehen. **Außerhalb der Schreibrechte dessen aufbewahren, der das Protokoll kürzen kann** – eine `.head` neben dem Protokoll lässt sich zusammen mit ihm löschen. |
-| B5.1 | Der Datenschutzfilter (`schleuse`) ist ein deterministischer Mustervergleich. Eine IBAN mit Zeilenumbruch, Text mit unsichtbaren Zeichen oder ein nur Base64-kodiertes Geheimnis im Fließtext wird **nicht** erkannt. Er verringert Abfluss, er anonymisiert nicht. | Sich bei Geheimnissen nicht darauf verlassen; Geheimnisse gar nicht in Werkzeugargumente schreiben. Heute ebenfalls nicht erkannt: Schlüssel wie `db_password` oder `access_token` (B5.2, als erwarteter Fehlschlag festgehalten). |
+| B5.1 | Der Datenschutzfilter (`schleuse`) ist ein deterministischer Mustervergleich. Eine IBAN mit Zeilenumbruch, Text mit unsichtbaren Zeichen oder ein nur Base64-kodiertes Geheimnis im Fließtext wird **nicht** erkannt. Er verringert Abfluss, er anonymisiert nicht. | Sich bei Geheimnissen nicht darauf verlassen; Geheimnisse gar nicht in Werkzeugargumente schreiben. |
 | B7.1 | Mit `confirm.elicitation: true` warnt `lookfirst serve` beim Start vor autonomen Clients, die die Elicitation selbst beantworten könnten (Selbstfreigabe), auch mit zusätzlichem Freigabekanal. Die Warnung belegt keine menschliche Freigabe. | Für autonome Clients `confirm.elicitation: false` setzen, dann entscheiden nur die Webseite oder der Webhook – **und** den Agenten netzwerkseitig von dieser Seite trennen (anderer Rechner, Container oder Netzwerk-Namespace, oder Firewall-Regel pro Benutzer). Ein eigener OS-Benutzer genügt nicht: jeder lokale Benutzer erreicht Loopback. `identity_header` nur nutzen, wenn das Backend ausschließlich für den Auth-Proxy erreichbar ist; der Header wird ungeprüft übernommen, ein Agent mit direktem Zugriff setzt ihn selbst und gibt sich frei. |
 
 ## Datenschutz-Schleuse (Vorschau v0.3)
@@ -116,7 +116,7 @@ Argumente stehen nur als SHA-256 im Protokoll; die lesbare Zusammenfassung schon
 zurück. Standard: unverändert. Die eingebauten Platzhalter für IBAN, Karten, E-Mail, Telefon, Zugangsdaten und die Namensliste
 liefert die Schleuse (siehe „Datenschutz-Schleuse“ oben); der Hook ist nur für eigene Zusatzregeln obendrauf. Er bekommt eine
 Kopie und darf alles Angezeigte maskieren, nie aber die Bindung: Aufruf-ID und `args_sha256` kommen immer aus Gate und Registry,
-auch auf der Freigabeseite und in `/open` (#668 P3).
+auch auf der Freigabeseite und in `/open`.
 
 ## Compliance
 
@@ -144,7 +144,7 @@ nicht im Paket – Update und Rückweg fassen sie nicht an. Diese vier Dateien v
 
 ```bash
 pip show lookfirst                                   # aktuelle Version / Commit notieren
-pipx install --force <pfad-oder-git-url>   # oder: pip install -U <pfad>
+pipx install --force git+https://github.com/Aethelgard-Systems/lookfirst   # oder: pip install -U …
 lookfirst check --config lookfirst.yaml
 lookfirst verify-log --config lookfirst.yaml
 ```
@@ -152,7 +152,7 @@ lookfirst verify-log --config lookfirst.yaml
 Danach den Client neu starten (stdio: der Client startet das Gate) bzw. den `serve --transport http`-Prozess.
 
 **Rückweg.** Vorige Version genauso installieren, auf den notierten Commit festgelegt:
-`pipx install --force "git+<git-url>@<voriger-commit>"`, danach wieder `check` und `verify-log`.
+`pipx install --force "git+https://github.com/Aethelgard-Systems/lookfirst@<voriger-commit>"`, danach wieder `check` und `verify-log`.
 Nie einen neuen Schlüssel erzeugen, um ein Problem zu „lösen“: alte Einträge sind nur mit der alten `.pub` prüfbar.
 
 **Was ein Werkzeug-Ergebnis bedeutet** (`structuredContent.lookfirst`):
@@ -181,7 +181,7 @@ Nie einen neuen Schlüssel erzeugen, um ein Problem zu „lösen“: alte Eintr�
 
 ## Tests
 
-`python -m unittest discover -s tests` – 95 Tests, synthetische Daten, MCP im Speicher plus ein echter stdio-Unterprozess: Regeln,
+`python -m unittest discover -s tests` – 157 Tests (davon 3 erwartete Fehlschläge, die die bekannte Grenze B5.1 festhalten), synthetische Daten, MCP im Speicher plus ein echter stdio-Unterprozess: Regeln,
 Parameterbindung (`args_sha256`), Freigabe ja/nein/Timeout, Web- und Webhook-Kanal, Rücklesen ok/unklar/fehlgeschlagen, Protokollintegrität
 (Manipulationserkennung bei veränderten, entfernten, umsortierten, eingefügten Zeilen, gefälschter Signatur, Abschneiden oder fremdem Schlüssel),
 Lesezugriffe unverändert durchgeleitet, mehrere Upstreams, HTTP-Bearer-Token, Schleuse (Maskierung, Platzhalter, Sitzungsbindung, Zugangsdaten),

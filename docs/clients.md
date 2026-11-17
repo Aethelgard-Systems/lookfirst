@@ -1,4 +1,4 @@
-# Connect a client to lookfirst (v1.1)
+# Connect a client to lookfirst
 
 lookfirst sits between your MCP client and the real server. The client talks to lookfirst; lookfirst talks to the upstream(s)
 listed in `lookfirst.yaml`. Three ready-made configurations – copy, adjust the two paths, restart the client.
@@ -6,9 +6,9 @@ listed in `lookfirst.yaml`. Three ready-made configurations – copy, adjust the
 Common part, once (5 minutes):
 
 ```sh
-pipx install git+https://github.com/<org>/<repo>.git   # or: pip install <path-to>
+pipx install git+https://github.com/Aethelgard-Systems/lookfirst   # or: pip install git+https://…
 mkdir ~/lookfirst && cd ~/lookfirst
-cp <repo>/examples/lookfirst.yaml .      # edit upstreams + rules
+curl -O https://raw.githubusercontent.com/Aethelgard-Systems/lookfirst/main/examples/lookfirst.yaml   # edit upstreams + rules
 lookfirst keygen --config lookfirst.yaml                    # Ed25519 signing key, 0600, once
 lookfirst serve --config lookfirst.yaml --transport http --port 8470   # only for HTTP clients; stdio clients start it themselves
 ```
@@ -94,7 +94,7 @@ answers MCP elicitation is UNKNOWN (not stated in its docs) – keep `confirm.we
 
 Single observations by one tester, not a compatibility promise: client versions change, and Claude Code releases in particular may add elicitation. Treat the **web page as the channel that works everywhere** and re-check your client version before relying on the in-chat form.
 
-## Who approved? (v1.1)
+## Who approved?
 
 Every decision is logged as `channel:actor`:
 
