@@ -47,7 +47,7 @@ catches it. See [demo/VIDEO.md](demo/VIDEO.md) for the screen-recording script.
 
 **Who approved:** every decision is logged as `channel:actor` – `web:<user>` from an authenticating reverse-proxy header
 (`confirm.web.identity_header`) or a self-declared name on the page, `webhook:<actor>` from the decision body, `elicitation:<client>`
-from the MCP client's name. Details and trust levels: [docs/clients.md](docs/clients.md#who-approved-v11).
+from the MCP client's name. Details and trust levels: [docs/clients.md](docs/clients.md#who-approved).
 
 ## How a call is decided
 
