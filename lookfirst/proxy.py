@@ -19,7 +19,7 @@ import anyio
 import mcp.types as t
 from mcp.server.lowlevel import Server
 
-from . import preview as pv, readback, rules
+from . import __version__, preview as pv, readback, rules
 from .audit import AuditLog
 from .config import Config
 from .confirm import Confirmer
@@ -103,7 +103,7 @@ class Gate:
         return sorted(n for n in self.config.tool_rules if self.up.resolve(n) is None)
 
     def server(self) -> Server:
-        return Server(self.config.server_name, version="0.2.0", instructions="Writes go through a human gate. Read tools pass through.",
+        return Server(self.config.server_name, version=__version__, instructions="Writes go through a human gate. Read tools pass through.",
                       on_list_tools=self.on_list_tools, on_call_tool=self.on_call_tool)
 
     async def on_list_tools(self, ctx, params):
