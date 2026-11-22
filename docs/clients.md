@@ -92,6 +92,19 @@ answers MCP elicitation is UNKNOWN (not stated in its docs) – keep `confirm.we
 | Antigravity 44.5.1 (HTTP) | not seen in our test | works | works |
 | Claude Desktop | not tested | expected to work (not tested) | not tested |
 
+**Single report, one configuration (issue #34, tester-reported, not verified by us):** lookfirst v0.2.0 (`7eef470`), Claude Desktop 6.28899.6, macOS 26.7.1, Python 3.14.3, MCP SDK 2.3.0, stdio, demo bank with a 45-second decision timeout.
+Claude Desktop first showed its own "Allow once" tool permission; afterwards lookfirst's approval appeared on the localhost page. No in-chat lookfirst form was observed (webhook not reported).
+
+| Case (synthetic demo bank) | Reported result |
+|---|---|
+| Approve 10 EUR on localhost | transfer executed, read-back `ok` |
+| Deny 20 EUR on localhost | `Not approved`, no transfer |
+| 30 EUR left pending | `Not approved (timeout)` after 45 s, no transfer |
+
+The tester reports 18 audit entries verified with zero problems. This is one tester's report for exactly this build and configuration, not a general compatibility or security claim.
+
+**Known operating limit – several stdio instances:** `confirm.web.port` is a fixed value (default 8477). If a client starts more than one lookfirst process, the extra processes cannot bind that port and exit (reported: `[Errno 48] address already in use`; in code, uvicorn stops the process with a startup failure when the bind fails). The tester's rerun used a small launcher giving each process its own loopback port and its own audit file. Until this is documented as supported, run one lookfirst process per web port and per audit file. Whether several processes may safely share one audit file is **not established** (the file is guarded by an in-process lock only, `lookfirst/audit.py`).
+
 Single observations by one tester, not a compatibility promise: client versions change, and Claude Code releases in particular may add elicitation. Treat the **web page as the channel that works everywhere** and re-check your client version before relying on the in-chat form.
 
 ## Who approved?
