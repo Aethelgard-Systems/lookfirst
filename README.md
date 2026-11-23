@@ -232,4 +232,6 @@ parameter binding (`args_sha256`), approve/deny/timeout, web + webhook channel, 
 HTTP bearer token, Schleuse (masking, placeholders, session binding, credentials), `lookfirst check`, `lookfirst pilot-status`,
 and launch gate evaluation.
 
-[![M8ven Score](https://m8ven.ai/badge/mcp/aethelgard-systems-lookfirst-1k3tgd?v=e2b8fb2b6e30d2c9e484146fd67779ba)](https://m8ven.ai/mcp/aethelgard-systems-lookfirst-1k3tgd?s=readme)
+
+[![M8ven Score](https://m8ven.ai/badge/mcp/aethelgard-systems-lookfirst-1k3tgd)](https://m8ven.ai/mcp/aethelgard-systems-lookfirst-1k3tgd?s=readme)
+
