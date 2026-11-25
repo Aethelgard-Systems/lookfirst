@@ -34,7 +34,7 @@ source: modelcontextprotocol.io "Connect to local MCP servers", 2026-10-18). Add
 
 Use absolute paths; if `lookfirst` is not on the PATH the app sees, put the full path to the `lookfirst` executable
 (`pipx` installs to `~/.local/bin/lookfirst`, Windows `%USERPROFILE%\.local\bin\lookfirst.exe`) into `command`.
-Restart Claude Desktop completely. Whether Claude Desktop shows MCP elicitation inside the chat is **not verified by us (UNKNOWN)**; do not rely on it. Keep `confirm.web` configured so approvals land on the page (`confirm.elicitation: true` only adds the in-chat form if the client offers it).
+Restart Claude Desktop completely. One tester report ([#34](https://github.com/Aethelgard-Systems/lookfirst/issues/34), v0.2.0, Claude Desktop 6.28899.6 on macOS, stdio) saw the approval on the localhost web page and no in-chat lookfirst form; see the note below the observation table, including the fixed-port limit with several processes. This is a single observation, not a compatibility promise; other builds and Windows are untested. Do not rely on in-chat elicitation. Keep `confirm.web` configured so approvals land on the page (`confirm.elicitation: true` only adds the in-chat form if the client offers it).
 
 ## 2. Claude Code (stdio or HTTP)
 
@@ -90,7 +90,7 @@ answers MCP elicitation is UNKNOWN (not stated in its docs) – keep `confirm.we
 | Claude Code CLI 2.1.316 | not offered in our test (capability handshake reported `false`) | works | works |
 | Gemini CLI 0.66.0 | not offered in our test | works | works |
 | Antigravity 44.5.1 (HTTP) | not seen in our test | works | works |
-| Claude Desktop | not tested | expected to work (not tested) | not tested |
+| Claude Desktop 6.28899.6, macOS 26.7.1, stdio – tester report #34, not run by us | not observed in that run | worked (localhost page) | not reported |
 
 **Single report, one configuration (issue #34, tester-reported, not verified by us):** lookfirst v0.2.0 (`7eef470`), Claude Desktop 6.28899.6, macOS 26.7.1, Python 3.14.3, MCP SDK 2.3.0, stdio, demo bank with a 45-second decision timeout.
 Claude Desktop first showed its own "Allow once" tool permission; afterwards lookfirst's approval appeared on the localhost page. No in-chat lookfirst form was observed (webhook not reported).
